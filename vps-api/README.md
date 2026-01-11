@@ -1,0 +1,85 @@
+
+## Project Structure 📁
+```
+api/
+├── core/              # Core functionality
+│   ├── config.py      # Environment and app configuration
+│   ├── database.py    # Database connection and sessions
+│   ├── exceptions.py  # Global exception handlers
+│   ├── logging.py     # Logging configuration
+│   └── security.py    # Authentication and security
+├── src/
+│   ├── heroes/        # Heroes module
+│   │   ├── models.py      # Database models
+│   │   ├── repository.py  # Data access layer
+│   │   ├── routes.py      # API endpoints
+│   │   └── schemas.py     # Pydantic models
+│   └── users/         # Users module
+│       ├── models.py      # User models
+│       ├── repository.py  # User data access
+│       ├── routes.py      # User endpoints
+│       └── schemas.py     # User schemas
+├── utils/            # Utility functions
+└── main.py          # Application entry point
+```
+
+## Requirements 📋
+- Python 3.8+
+- PostgreSQL
+
+## Setup 🛠️
+1. Install uv (follow instructions [here](https://docs.astral.sh/uv/#getting-started))
+
+2. Clone the repository:
+```bash
+
+```
+
+3. Install dependencies with uv:
+```bash
+uv sync
+```
+
+4. Set up environment variables:
+```bash
+cp .env.example .env
+# Edit .env with your database credentials
+```
+
+> 💡 **Important**: 
+> - The DATABASE_URL must start with `postgresql+asyncpg://` (e.g., `postgresql+asyncpg://user:pass@localhost:5432/dbname`)
+> - After updating environment variables, close and reopen VS Code to reload the configuration properly. VS Code will automatically activate the virtual environment when you reopen.
+
+5. Start the application:
+
+Using terminal:
+```bash
+uv run uvicorn api.main:app
+```
+
+Using VS Code:
+> 💡 If you're using VS Code, we've included run configurations in the `.vscode` folder. Just press `F5` or use the "Run and Debug" panel to start the application!
+
+6. (Optional) Enable pre-commit hooks for linting:
+```bash
+uv run pre-commit install
+```
+> 💡 This will enable automatic code formatting and linting checks before each commit
+
+## Creating a Migration 🔄
+1. Make changes to your models
+2. Generate migration:
+```bash
+alembic revision --autogenerate -m "your migration message"
+```
+
+Note: Migrations will be automatically applied when you start the application - no need to run `alembic upgrade head` manually!
+
+## API Endpoints 📊
+
+
+## Example Usage 📝
+Create a new hero:
+```bash
+
+```

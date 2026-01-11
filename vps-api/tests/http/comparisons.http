@@ -1,0 +1,13 @@
+### AI Analyze
+POST {{baseUrl}}/comparisons/ai-analyze
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "video_a_id": "{{videoIdA}}",
+  "video_b_id": "{{videoIdB}}"
+}
+
+### Get Report
+GET {{baseUrl}}/comparisons/report?video_a_id={{videoIdA}}&video_b_id={{videoIdB}}
+Authorization: Bearer {{token}}

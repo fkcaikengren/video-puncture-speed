@@ -1,0 +1,14 @@
+{
+  // 定义rest client环境变量
+  "rest-client.environmentVariables": {
+      "dev": {
+          "baseUrl": "http://localhost:8800/api",
+          "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiZDI0MTU0Mi0yZGQzLTQzZDQtOGQzNi01ZWVmYjY0ZGMxZWUiLCJleHAiOjE3Njc3NzAxMDR9.WMvaAs4vQGuJ9GmC9PrfrQyLnxdJKAus5akMm_VWin8"
+      },
+      "prod": {
+          "baseUrl": "https://api.production.com",
+          "token": "prod-token"
+      }
+  }
+}
+

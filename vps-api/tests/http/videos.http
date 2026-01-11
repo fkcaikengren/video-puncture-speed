@@ -1,0 +1,44 @@
+### Get Videos
+GET {{baseUrl}}/videos
+Authorization: Bearer {{token}}
+
+### Get Videos with params
+GET {{baseUrl}}/videos?page=1&page_size=10
+Authorization: Bearer {{token}}
+
+### Get Candidates
+GET {{baseUrl}}/videos/candidates
+Authorization: Bearer {{token}}
+
+### Get Video Detail
+# @name videoDetail
+GET {{baseUrl}}/videos/detail?id={{videoId}}
+Authorization: Bearer {{token}}
+
+### Upload Video
+POST {{baseUrl}}/videos/upload
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="file"; filename="video8.mp4"
+Content-Type: video/mp4
+
+< /home/tsw/workspace/keyan/videos/needle-videos/video8.mp4
+--boundary
+Content-Disposition: form-data; name="title"
+
+Video 8
+--boundary
+
+### Delete Video
+POST {{baseUrl}}/videos/delete?id=7d040e0b-450d-4716-b39e-84cc960c610d
+Authorization: Bearer {{token}}
+
+### Get Analysis
+GET {{baseUrl}}/videos/analysis?id=9b098cb0-f9fe-4ace-9e49-1e9f3aabb43d
+Authorization: Bearer {{token}}
+
+### Get Categories
+GET {{baseUrl}}/categories
+Authorization: Bearer {{token}}

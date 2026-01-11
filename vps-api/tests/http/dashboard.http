@@ -1,0 +1,11 @@
+### Get Stats (Me)
+GET {{baseUrl}}/dashboard/stats?scope=me
+Authorization: Bearer {{token}}
+
+### Get Stats (All - Admin)
+GET {{baseUrl}}/dashboard/stats?scope=all
+Authorization: Bearer {{token}}
+
+### Get Pending Videos
+GET {{baseUrl}}/dashboard/pending-videos
+Authorization: Bearer {{token}}
