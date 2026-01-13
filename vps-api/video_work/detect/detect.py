@@ -1,17 +1,52 @@
 import cv2
+from pathlib import Path
 from typing import Any, Dict, List
+
+import numpy as np
+from numpy.typing import NDArray
 from ultralytics import YOLO
+from pydantic import BaseModel, ConfigDict, Field
+
+DEFAULT_MODEL_PATH = str(Path(__file__).resolve().parent / "yolo.pt")
+
+
+class VideoMeta(BaseModel):
+    width: int = Field(..., description="视频宽度（像素）")
+    height: int = Field(..., description="视频高度（像素）")
+    fps: int = Field(..., description="视频帧率（FPS）")
+    codec: str = Field(..., description="视频编码格式（fourcc）")
+    frame_count: int = Field(..., description="总帧数")
+
+    model_config = ConfigDict(extra="forbid")
+
+    def __getitem__(self, key: str) -> Any:
+        return getattr(self, key)
+
+
+class DetectResult(BaseModel):
+    frames: List[NDArray[np.uint8]] = Field(..., description="原始视频帧列表（BGR 图像）")
+    detect_norm_annotation: List[List[Dict[str, float]]] = Field(
+        ..., description="每帧归一化检测框列表"
+    )
+    meta: VideoMeta = Field(
+        ..., description="视频元信息（宽高、帧率、编码、帧数）"
+    )
+
+    model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
+
+    def __getitem__(self, key: str) -> Any:
+        return getattr(self, key)
 
 
 class Detect:
     _instance: "Detect | None" = None
 
-    def __new__(cls, model_path: str) -> "Detect":
+    def __new__(cls, model_path: str = DEFAULT_MODEL_PATH) -> "Detect":
         if cls._instance is None:
             cls._instance = super().__new__(cls)
         return cls._instance
 
-    def __init__(self, model_path: str) -> None:
+    def __init__(self, model_path: str = DEFAULT_MODEL_PATH) -> None:
         if hasattr(self, "_initialized") and self._initialized:
             return
         self.model_path = model_path
@@ -66,8 +101,8 @@ class Detect:
         detect_norm_annotation: List[List[Dict[str, float]]],
         wnd_size: int = 60,
         step: int = 30,
-        conf_threshhold = 0.5,
-        box_scale = 2
+        conf_threshhold=0.5,
+        box_scale=2,
     ) -> List[List[Dict[str, float]]]:
         frame_count = len(detect_norm_annotation)
         if frame_count == 0:
@@ -294,7 +329,103 @@ class Detect:
 
         return optimized
 
-    def predict_video(self, video_path: str) -> Dict[str, Any]:
+    @staticmethod
+    def crop_frames(
+        frames: List[NDArray[np.uint8]],
+        detect_norm_annotation: List[List[Dict[str, float]]],
+        square: bool = True,
+    ) -> List[List[NDArray[np.uint8]]]:
+        """
+        按归一化检测框裁剪视频帧，若 square 为 True 则裁剪为正方形，否则为矩形， 当裁剪超出图片边界会处理为黑色（0）。
+        Args:
+            frames (List[NDArray[np.uint8]]): 视频帧列表
+            detect_norm_annotation (List[List[Dict[str, float]]]): 归一化检测框列表
+            square (bool, optional): 是否裁剪为正方形. Defaults to True.
+
+        Returns:
+            List[List[NDArray[np.uint8]]]: 按检测框裁剪的帧片段列表
+        """
+        cropped_frames: List[List[NDArray[np.uint8]]] = []
+
+        for frame, frame_annotations in zip(frames, detect_norm_annotation):
+            height, width = frame.shape[:2]
+            frame_crops: List[NDArray[np.uint8]] = []
+
+            for ann in frame_annotations:
+                x1_n = float(ann.get("x1", 0.0))
+                y1_n = float(ann.get("y1", 0.0))
+                x2_n = float(ann.get("x2", 1.0))
+                y2_n = float(ann.get("y2", 1.0))
+
+                x1_i = int(x1_n * width)
+                y1_i = int(y1_n * height)
+                x2_i = int(x2_n * width)
+                y2_i = int(y2_n * height)
+
+                x1_i = max(0, min(width, x1_i))
+                y1_i = max(0, min(height, y1_i))
+                x2_i = max(0, min(width, x2_i))
+                y2_i = max(0, min(height, y2_i))
+
+                if x2_i <= x1_i or y2_i <= y1_i:
+                    continue
+
+                if not square:
+                    crop = frame[y1_i:y2_i, x1_i:x2_i]
+                    frame_crops.append(crop)
+                    continue
+
+                w = x2_i - x1_i
+                h = y2_i - y1_i
+                side = int(max(w, h))
+                if side <= 0:
+                    continue
+                if side % 2 != 0:
+                    side += 1
+
+                cx = (x1_i + x2_i) / 2.0
+                cy = (y1_i + y2_i) / 2.0
+
+                half_side = side / 2.0
+                new_x1 = int(round(cx - half_side))
+                new_y1 = int(round(cy - half_side))
+                new_x2 = new_x1 + side
+                new_y2 = new_y1 + side
+
+                src_x1 = max(0, min(width, new_x1))
+                src_y1 = max(0, min(height, new_y1))
+                src_x2 = max(0, min(width, new_x2))
+                src_y2 = max(0, min(height, new_y2))
+
+                if src_x2 <= src_x1 or src_y2 <= src_y1:
+                    continue
+
+                dst_x1 = src_x1 - new_x1
+                dst_y1 = src_y1 - new_y1
+                dst_x2 = dst_x1 + (src_x2 - src_x1)
+                dst_y2 = dst_y1 + (src_y2 - src_y1)
+
+                if frame.ndim == 2:
+                    crop: NDArray[np.uint8] = np.zeros(
+                        (side, side), dtype=frame.dtype
+                    )
+                    crop[dst_y1:dst_y2, dst_x1:dst_x2] = frame[
+                        src_y1:src_y2, src_x1:src_x2
+                    ]
+                else:
+                    channels = frame.shape[2]
+                    crop = np.zeros((side, side, channels), dtype=frame.dtype)
+                    crop[dst_y1:dst_y2, dst_x1:dst_x2, :] = frame[
+                        src_y1:src_y2, src_x1:src_x2, :
+                    ]
+
+                frame_crops.append(crop)
+
+            cropped_frames.append(frame_crops)
+
+        return cropped_frames
+
+    def predict_video(self, video_path: str) -> DetectResult:
         cap = cv2.VideoCapture(video_path)
         if not cap.isOpened():
             raise RuntimeError(f"Could not open video {video_path}")
@@ -310,9 +441,8 @@ class Detect:
             + chr((fourcc_int >> 24) & 0xFF)
         )
 
-        frames: List[Any] = []
+        frames: List[NDArray[np.uint8]] = []
         detect_norm_annotation: List[List[Dict[str, float]]] = []
-        crop_frames: List[List[Any]] = []
 
         try:
             while cap.isOpened():
@@ -325,7 +455,6 @@ class Detect:
                 results = self.model(frame)
 
                 frame_annotations: List[Dict[str, float]] = []
-                frame_crops: List[Any] = []
 
                 for result in results:
                     boxes = result.boxes
@@ -349,26 +478,21 @@ class Detect:
                             }
                         )
 
-                        crop = frame[y1_i:y2_i, x1_i:x2_i]
-                        frame_crops.append(crop)
-
                 detect_norm_annotation.append(frame_annotations)
-                crop_frames.append(frame_crops)
         finally:
             cap.release()
             cv2.destroyAllWindows()
 
-        meta: Dict[str, Any] = {
-            "width": frame_width,
-            "height": frame_height,
-            "fps": fps,
-            "codec": fourcc,
-            "frame_count": len(frames),
-        }
+        meta = VideoMeta(
+            width=frame_width,
+            height=frame_height,
+            fps=fps,
+            codec=fourcc,
+            frame_count=len(frames),
+        )
 
-        return {
-            "frames": frames,
-            "detect_norm_annotation": detect_norm_annotation,
-            "crop_frames": crop_frames,
-            "meta": meta,
-        }
+        return DetectResult(
+            frames=frames,
+            detect_norm_annotation=detect_norm_annotation,
+            meta=meta,
+        )
