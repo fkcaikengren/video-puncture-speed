@@ -1,15 +1,21 @@
 import { Suspense, use, useActionState, useState } from "react";
 import { useLoaderData, useNavigate } from "react-router";
-import ReactECharts from 'echarts-for-react';
 import { useMeasure } from "react-use";
 import { Button } from "@/components/ui/button";
-import ReactPlayer from "react-player"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { analyzeVideoApiVideosAnalysisPost, getAnalysisApiVideosAnalysisGet } from "@/APIs";
 import type { BaseResponseAnalysisResponse, VideoDetailResponse, AnalysisResultResponse } from "@/APIs/types.gen";
-import { InfoIcon } from "lucide-react";
+import { InfoIcon, Maximize2 } from "lucide-react";
 import { isNil } from '@/utils'
+import VideoPlayCard from "@/components/video-play-card";
+import SpeedCurveChart, { type SpeedCurveChartData } from "@/components/speed-curve-chart";
+import { useModal } from "@/lib/react-modal-store";
+
+import VideoGridSkeleton from "@/components/video-grid-skeleton";
+
+
 
 type AnalysisPromise = Promise<({
     data: BaseResponseAnalysisResponse;
@@ -19,13 +25,6 @@ type AnalysisPromise = Promise<({
     error: unknown;
 })>;
 
-
-interface CurveDataItem {
-    t: number, //时间 (s)
-    v: number, //速度（mm/s）
-}
-
-type CurveData = CurveDataItem[];
 
 export async function clientLoader({ request }: { request: Request }) {
     const url = new URL(request.url);
@@ -42,7 +41,7 @@ export default function VideoAnalysis() {
     const { id, analysisPromise } = useLoaderData<typeof clientLoader>();
 
     return (
-        <Suspense fallback={<VideoAnalysisSkeleton />} key={id || "no-id"}>
+        <Suspense fallback={<VideoGridSkeleton />} key={id || "no-id"}>
             <VideoAnalysisContent id={id} analysisPromise={analysisPromise} />
         </Suspense>
     );
@@ -56,6 +55,7 @@ function VideoAnalysisContent({
     analysisPromise: AnalysisPromise;
 }) {
     const navigate = useNavigate();
+    const openModal = useModal();
     const [analysisPromiseOverride, setAnalysisPromiseOverride] = useState<AnalysisPromise | null>(null);
     const result = use(analysisPromiseOverride ?? analysisPromise);
 
@@ -65,7 +65,6 @@ function VideoAnalysisContent({
     const markedVideo = { ...video, url: analysis.marked_url || "" } as VideoDetailResponse;
 
     const [curveContainerRef, { height: curveContainerHeight }] = useMeasure<HTMLDivElement>();
-
 
         
     const coreMetrics = [
@@ -88,59 +87,9 @@ function VideoAnalysisContent({
         },
     ]
 
-    const curveDataArray: CurveData = Array.isArray(analysis.curve_data) ? (analysis.curve_data as CurveData) : [];
-    const xAxisData =
-        curveDataArray?.map((p, idx) => {
-            if (!isNil(p.t)) {
-                if (typeof p.t === "number") return `${p.t.toFixed(2)}`;
-                if (typeof p.t === "string") return p.t;
-            }
-            return `${idx}s`;
-        }) ?? ['0.00', '1.00', '2.00', '3.00', '4.00', '5.00', '6.00'];
-
-    const ySeriesData =
-        curveDataArray?.map((p, idx) => {
-            if (!isNil(p.v)) {
-                if (typeof p.v === "number") return p.v;
-            }
-            return idx === 0 ? 0 : idx * 3;
-        }) ?? [0, 1, 2, 3, 4, 5, 6];
-
-    const chartOption = {
-        tooltip: {
-            trigger: 'axis',
-            axisPointer: {
-                type: 'cross',
-                label: {
-                    backgroundColor: '#6a7985'
-                }
-            }
-        },
-        xAxis: {
-            type: 'category',
-            name: '时间 (s)',
-            boundaryGap: false,
-            data: xAxisData
-        },
-        yAxis: {
-            type: 'value',
-            name: '速度 (mm/s)',
-            min: 0,
-            max: 12,
-        },
-        series: [
-            {
-                name: '速度曲线',
-                type: 'line',
-                smooth: true,
-                // areaStyle: {}, 
-                emphasis: {
-                    focus: 'series'
-                },
-                data: ySeriesData
-            }
-        ]
-    };
+    const curveDataArray: SpeedCurveChartData = Array.isArray(analysis.curve_data)
+      ? (analysis.curve_data as SpeedCurveChartData)
+      : [];
 
     const [analyzeError, runAnalyze, analyzePending] = useActionState<string | null, { id: string }>(
         async (_prev, payload) => {
@@ -172,12 +121,14 @@ function VideoAnalysisContent({
         null,
     );
 
+    console.log('curveContainerHeight:', curveContainerHeight)
+
     return (
         <div className="flex flex-row gap-6 h-[calc(100vh-100px)]">
             {/* Left: Video Area */}
             <div className="flex flex-col gap-4 h-full min-h-0 ">
-                <VideoCard title="原视频" video={video} />
-                <VideoCard title="标记视频" video={markedVideo} />
+                <VideoPlayCard title="原视频" url={video.url || ''} />
+                <VideoPlayCard title="标记视频" url={markedVideo.url || ''} />
             </div>
 
             {/* Right: Data Dashboard */}
@@ -185,9 +136,35 @@ function VideoAnalysisContent({
                 <Card className="flex-1">
                      <CardHeader>
                         <CardTitle>速度曲线</CardTitle>
+                        <CardAction>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                onClick={() =>
+                                  openModal("SpeedChartModal", {
+                                    title: "速度曲线",
+                                    curveData: curveDataArray,
+                                  })
+                                }
+                              >
+                                <Maximize2 className="size-4" />
+                                <span className="sr-only">全屏查看</span>
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" align="end">
+                              全屏查看
+                            </TooltipContent>
+                          </Tooltip>
+                        </CardAction>
                     </CardHeader>
                     <CardContent className="h-full">
-                        <ReactECharts option={chartOption} style={{ height: curveContainerHeight*0.5, width: '100%' }} />
+                        <SpeedCurveChart
+                          curveData={curveDataArray}
+                          style={{ height: curveContainerHeight * 0.5 }}
+                        />
                     </CardContent>
                 </Card>
                 
@@ -255,57 +232,4 @@ function VideoAnalysisContent({
             </div>
         </div>
     )
-}
-
-
-function VideoCard({
-    title,
-    video
-}:{
-    title: string,
-    video: VideoDetailResponse
-}){
-    const [containerRef, { height: containerHeight }] = useMeasure<HTMLDivElement>();
-
-
-    return (
-        <Card 
-            ref={containerRef} 
-            className="py-0 overflow-hidden relative  bg-black flex items-center justify-center aspect-video lg:flex-1"
-            style={{
-                width: containerHeight * (16 / 9),
-            }}
-        >
-            <div className="absolute top-0 right-0 bg-black text-white text-center py-1 px-1 rounded-bl-md">
-                {title}
-            </div>
-            <CardContent  className="px-0 h-full w-full">
-                    <ReactPlayer
-                        slot="media"
-                        src={video.url || ''}
-                        controls={true}
-                        style={{
-                            width: "100%",
-                            height: "100%",
-                            objectFit: "contain",
-                        }}
-                    ></ReactPlayer>
-            </CardContent>
-        </Card>
-    )
-}
-
-function VideoAnalysisSkeleton() {
-    return (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(100vh-100px)] animate-pulse">
-            <div className="flex flex-col gap-4 h-full overflow-y-auto">
-                <div className="h-[260px] bg-muted rounded-md" />
-                <div className="h-[260px] bg-muted rounded-md" />
-            </div>
-            <div className="flex flex-col gap-4 h-full">
-                <div className="flex-1 bg-muted rounded-md" />
-                <div className="h-[220px] bg-muted rounded-md" />
-            </div>
-        </div>
-    );
 }

@@ -79,15 +79,17 @@ export function VideoCard({ video, className, onPlay, onAnalysis, ...props }: Vi
                 <PlayCircle size={48} color="white" />
             </div>
 
-            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-               <Button 
-                size="sm" 
-                className="cursor-pointer bg-black/60 hover:bg-black/80 text-white text-xs h-7 px-3 rounded-md border border-white/10 backdrop-blur-sm"
-                onClick={handleAnalysis}
-               >
-                 去分析
-               </Button>
-            </div>
+            {onAnalysis ? (
+              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                <Button
+                  size="sm"
+                  className="cursor-pointer bg-black/60 hover:bg-black/80 text-white text-xs h-7 px-3 rounded-md border border-white/10 backdrop-blur-sm"
+                  onClick={handleAnalysis}
+                >
+                  去分析
+                </Button>
+              </div>
+            ) : null}
 
             {/* Duration */}
             {video.durationStr && (

@@ -6,12 +6,14 @@ import {
   Scripts,
   ScrollRestoration,
 } from "react-router";
+import { useState } from "react";
 import type { Route } from "./+types/root";
 import "./app.css";
 import { ThemeProvider } from "@/components/theme-provider"
 import { ModalStore, useModal } from '@/lib/react-modal-store';
 import { modalMap } from './components/modals';
 import { Toaster } from "@/components/ui/sonner"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 
 import { client } from './APIs/client.gen';
@@ -66,16 +68,26 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 
 export default function App() {
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            refetchOnWindowFocus: false,
+          },
+        },
+      }),
+  );
 
   return (
-    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-      <ModalStore modalMap={modalMap} destroyOnClose="afterClose">
-        <Outlet />
-        <Toaster 
-          position="bottom-right"
-        />
-      </ModalStore>
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+        <ModalStore modalMap={modalMap} destroyOnClose="afterClose">
+          <Outlet />
+          <Toaster position="bottom-right" />
+        </ModalStore>
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 }
 
