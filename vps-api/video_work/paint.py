@@ -1,5 +1,5 @@
-
-from typing import Dict, Tuple
+import cv2
+from typing import Dict, Tuple, List, Sequence
 import math
 import numpy as np
 from numpy.typing import NDArray
@@ -129,6 +129,49 @@ def overlay_crop_mask_on_frame(
 
     return frame
 
+
+
+def draw_box_on_frame(
+    frame: NDArray[np.uint8],
+    annotations: List[Dict[str, float]],
+) -> NDArray[np.uint8]:
+    height, width = frame.shape[:2]
+    scale = height / 720.0 if height > 0 else 1.0
+    thickness = max(1, int(round(2 * scale)))
+    font_scale = 0.6 * scale
+    text_offset = int(round(10 * scale))
+    for ann in annotations:
+        x1_n = ann["x1"]
+        y1_n = ann["y1"]
+        x2_n = ann["x2"]
+        y2_n = ann["y2"]
+        conf = ann.get("conf", 0.0)
+
+        x1 = int(x1_n * width)
+        y1 = int(y1_n * height)
+        x2 = int(x2_n * width)
+        y2 = int(y2_n * height)
+
+        cv2.rectangle(
+            frame,
+            (x1, y1),
+            (x2, y2),
+            (0, 255, 0),
+            thickness,
+        )
+
+        text = f"{conf*100:.1f}%"
+        cv2.putText(
+            frame,
+            text,
+            (x1, y1 - text_offset),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            font_scale,
+            (0, 255, 0),
+            thickness,
+        )
+
+    return frame
 
 
 

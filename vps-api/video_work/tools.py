@@ -9,8 +9,89 @@ import math
 import torch
 from numpy.typing import NDArray
 from torch import Tensor
-from typing import Dict, List, Sequence, Tuple
+from typing import Dict, List, Literal, Sequence, Tuple, TypedDict
 
+
+class VideoFramesMeta(TypedDict):
+    width: int
+    height: int
+    fps: int
+    codec: str
+    frame_count: int
+
+
+class VideoFramesResult(TypedDict):
+    frames: List[NDArray[np.uint8]]
+    meta: VideoFramesMeta
+
+
+VideoResolutionLevel = Literal["720", "1080", "2k", "4k"]
+
+
+def get_video_resolution_level(width: int, height: int) -> VideoResolutionLevel:
+    longest_side = max(int(width), int(height))
+    if longest_side < 1920:
+        return "720"
+    if longest_side < 2560:
+        return "1080"
+    if longest_side < 3840:
+        return "2k"
+    return "4k"
+
+
+def get_detect_box_sacle(width: int, height: int):
+    level = get_video_resolution_level(width, height)
+    match level:
+        case "720":
+            return 2.5
+        case "1080":
+            return 2.3
+        case "2k":
+            return 2.1
+        case "4k":
+            return 2
+
+
+
+
+def extract_video_frames(video_path: str) -> VideoFramesResult:
+    cap = cv2.VideoCapture(video_path)
+    if not cap.isOpened():
+        raise RuntimeError(f"Could not open video {video_path}")
+
+    frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    fps = int(cap.get(cv2.CAP_PROP_FPS)) or 25
+    fourcc_int = int(cap.get(cv2.CAP_PROP_FOURCC))
+    fourcc = (
+        chr(fourcc_int & 0xFF)
+        + chr((fourcc_int >> 8) & 0xFF)
+        + chr((fourcc_int >> 16) & 0xFF)
+        + chr((fourcc_int >> 24) & 0xFF)
+    )
+
+    frames: List[NDArray[np.uint8]] = []
+    try:
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if not ret:
+                break
+            frames.append(frame.copy())
+    finally:
+        cap.release()
+        cv2.destroyAllWindows()
+
+    meta: VideoFramesMeta = {
+        "width": frame_width,
+        "height": frame_height,
+        "fps": fps,
+        "codec": fourcc,
+        "frame_count": len(frames),
+    }
+    return {"frames": frames, "meta": meta}
+
+def get_device() -> torch.device:
+    return torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def frames2tensors(
     frames: List[NDArray[np.uint8]],

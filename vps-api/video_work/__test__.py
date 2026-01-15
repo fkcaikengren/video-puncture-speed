@@ -2,14 +2,25 @@ from pathlib import Path
 from video_work.detect.detect import Detect
 from video_work.classify.classify import Classify
 from video_work.segment.segment import Segment
-from video_work.paint import overlay_crop_mask_on_frame, square_crop_with_origin, save_speeds_graph
+from video_work.paint import (
+    overlay_crop_mask_on_frame, 
+    square_crop_with_origin, 
+    save_speeds_graph,
+    draw_box_on_frame,
+)
 from video_work.tools import (
     save_frames2video,
     frames2tensors,
     make_group_square_annotations,
     get_coord_mask,
+    extract_video_frames,
+    get_detect_box_sacle,
 )
-from video_work.speed import get_coord_min_rect_len,fix_to_monotonic_decreasing, calc_speed
+from video_work.speed import (
+    get_coord_min_rect_len,
+    fix_to_monotonic_decreasing, 
+    calc_speed
+)
 
 # 不导出任何变量和函数
 __all__ = []
@@ -17,16 +28,18 @@ __all__ = []
 
 project_root = Path(__file__).resolve().parents[1]
 video_path_dir = Path('/home/tsw/workspace/keyan/videos/needle-videos/').resolve()
-video_path = video_path_dir / 'video16.mp4'
+video_path = video_path_dir / 'video2.mp4'
 output_dir = project_root / "video_work" / "test_output"
 
 def test_detect() -> None:
 
     detector = Detect()
-    result = detector.predict_video(str(video_path))
+    video = extract_video_frames(str(video_path))
+    frames = video["frames"]
+    meta = video["meta"]
+    detect_norm_annotation = detector.predict_images(frames, int(meta["width"]), int(meta["height"]))
 
-    frames = result.frames
-    fps = int(result.meta.fps)
+    fps = int(meta["fps"])
     print(f"fps: {fps}")
     if fps >= 60:
         wnd_size = 150
@@ -36,29 +49,35 @@ def test_detect() -> None:
         step = 30
 
     annotations_per_frame = Detect.optimize_detect_norm_annotation(
-        result.detect_norm_annotation, wnd_size=wnd_size, step=step
+        detect_norm_annotation, wnd_size=wnd_size, step=step,
+        box_scale = get_detect_box_sacle(int(meta["width"]), int(meta["height"]))
     )
     frames_with_boxes = []
     for frame, anns in zip(frames, annotations_per_frame):
-        drawn = Detect.draw_box(frame, anns)
+        drawn = draw_box_on_frame(frame, anns)
         frames_with_boxes.append(drawn)
 
     save_frames2video(
         frames=frames_with_boxes,
         output_path=str(output_dir / f"{video_path.stem}_detected.mp4"),
-        fps=int(result.meta.fps),
-        size=(int(result.meta.width), int(result.meta.height)),
+        fps=int(meta["fps"]),
+        size=(int(meta["width"]), int(meta["height"])),
     )
 
 def test_classify() -> None:
     
     detector = Detect()
     classifier = Classify()
-    result = detector.predict_video(str(video_path))
+    video = extract_video_frames(str(video_path))
+    frames = video["frames"]
+    meta = video["meta"]
+    fps = int(meta["fps"])
+    detect_norm_annotation = detector.predict_images(frames, int(meta["width"]), int(meta["height"]))
     annotations_per_frame = Detect.optimize_detect_norm_annotation(
-        result.detect_norm_annotation
+        detect_norm_annotation,
+        box_scale = get_detect_box_sacle(int(meta["width"]), int(meta["height"]))
     )
-    nested_crop_frames = Detect.crop_frames(result.frames, annotations_per_frame)
+    nested_crop_frames = Detect.crop_frames(frames, annotations_per_frame)
     crop_frames = [
         crop for frame_crops in nested_crop_frames for crop in frame_crops
     ]
@@ -79,20 +98,33 @@ def test_segment() -> None:
     detector = Detect()
     segmenter = Segment()
     
-    result = detector.predict_video(str(video_path))
-    # 扩大2倍，正方形 预测框
+    video = extract_video_frames(str(video_path))
+    frames_all = video["frames"]
+    meta = video["meta"]
+    fps = int(meta["fps"])
+    if fps >= 60:
+        wnd_size = 150
+        step = 60
+    else:
+        wnd_size = 90
+        step = 30
+    detect_norm_annotation = detector.predict_images(frames_all, int(meta["width"]), int(meta["height"]))
+    # 扩大为正方形 预测框
     annotations_per_frame = Detect.optimize_detect_norm_annotation(
-        result.detect_norm_annotation
+        detect_norm_annotation,
+        wnd_size=wnd_size, 
+        step=step,
+        box_scale = get_detect_box_sacle(int(meta["width"]), int(meta["height"]))
     )
     group_size = 30
     same_size_annotations = make_group_square_annotations(
         annotations_per_frame,
         group_size=group_size,
-        image_size=(int(result.meta.width), int(result.meta.height)),
+        image_size=(int(meta["width"]), int(meta["height"])),
     )
 
-    max_frames = min(400, len(result.frames)) # 指最大处理400帧
-    frames = result.frames[:max_frames]
+    max_frames = min(400, len(frames_all)) # 指最大处理400帧
+    frames = frames_all[:max_frames]
     anns = same_size_annotations[:max_frames]
 
     crop_items: list[tuple[int, object, int, int]] = []
@@ -121,7 +153,12 @@ def test_segment() -> None:
         f"frame_tensors.length:seg_results.length => {len(seg_results)} : {len(frame_tensors)}"
     )
 
-    frames_with_masks = [f.copy() for f in frames]
+    frames_with_boxes = []
+    for frame, anns in zip(frames, annotations_per_frame):
+        drawn = draw_box_on_frame(frame, anns)
+        frames_with_boxes.append(drawn)
+
+    frames_with_masks = [f.copy() for f in frames_with_boxes]
     for (frame_idx, crop, origin_x, origin_y), seg in zip(crop_items, seg_results):
         for det in seg:
             segments = det.get("segments")
@@ -139,8 +176,8 @@ def test_segment() -> None:
     save_frames2video(
         frames=frames_with_masks,
         output_path=str(output_dir / f"{video_path.stem}_segmented.mp4"),
-        fps=int(result.meta.fps),
-        size=(int(result.meta.width), int(result.meta.height)),
+        fps=int(meta["fps"]),
+        size=(int(meta["width"]), int(meta["height"])),
     )
     
 def test_speed() -> None:
@@ -148,18 +185,30 @@ def test_speed() -> None:
     classifier = Classify()
     segmenter = Segment()
     
-    result = detector.predict_video(str(video_path))
-    frames = result.frames
-    # 扩大2倍，正方形 预测框
+    video = extract_video_frames(str(video_path))
+    frames = video["frames"]
+    meta = video["meta"]
+    fps = int(meta["fps"])
+    if fps >= 60:
+        wnd_size = 150
+        step = 60
+    else:
+        wnd_size = 90
+        step = 30
+    detect_norm_annotation = detector.predict_images(frames, int(meta["width"]), int(meta["height"]))
+    # 扩大为正方形 预测框
     annotations_per_frame = Detect.optimize_detect_norm_annotation(
-        result.detect_norm_annotation
+        detect_norm_annotation,
+        wnd_size=wnd_size, 
+        step=step,
+        box_scale = get_detect_box_sacle(int(meta["width"]), int(meta["height"]))
     )
 
     group_size = 30
     group_square_annotations = make_group_square_annotations(
         annotations_per_frame,
         group_size=group_size,
-        image_size=(int(result.meta.width), int(result.meta.height)),
+        image_size=(int(meta["width"]), int(meta["height"])),
     )
 
     crop_items: list[tuple[int, object, int, int]] = []
@@ -217,15 +266,15 @@ def test_speed() -> None:
                 predict_end = predict_start + i
                 break
 
-    speed_swin=8
-    speed_step=2
+    speed_swin=32 if meta["fps"] >= 60 else 16
+    speed_step=8 if meta["fps"] >= 60 else 4
     init_speed, avg_speed, instantaneous_speeds = calc_speed(
         lens,
         (0, int(floor_idx)),
-        fps=result.meta.fps,
+        fps=meta["fps"],
         swin=speed_swin, 
         step=speed_step,
-        init_speed_sample_points = 10
+        init_speed_sample_points = 6
     )
     print(f"start_speed: {init_speed:.2f} mm/s")
     print(f"avg_speed: {avg_speed:.2f} mm/s")
@@ -249,6 +298,6 @@ if __name__ == "__main__":
     
     # test_detect()
     # test_classify()
-    # test_segment()
+    test_segment()
 
     test_speed()

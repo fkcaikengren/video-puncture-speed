@@ -1,5 +1,6 @@
 import os
 import uuid
+from datetime import datetime
 from fastapi import UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.exceptions import UnprocessableEntityException, InternalServerException
@@ -11,6 +12,10 @@ from app.core.logging import get_logger
 from app.api.videos.repository import VideoRepository
 from app.api.comparisons.repository import ComparisonRepository
 from app.api.videos.schemas import VideoCreate, VideoResponse, VideoDetailResponse, UploadResponse, VideoListResponse, AnalysisResponse, AnalysisResultResponse
+from app.api.videos.enums import VideoStatus
+from app.api.videos.models import Video, AnalysisResult
+
+from video_work.core import analyse_video
 
 logger = get_logger(__name__)
 DEFAULT_CATEGORY_ID = 1
@@ -129,7 +134,7 @@ class VideoService:
 
     async def delete_video(self, video_id: uuid.UUID):
         # 1. Get video with all relations to ensure we can clean up files
-        video = await self.repository.get_video_with_relations(video_id)
+        video = await self.repository.get_video_with_analysis_result(video_id)
         
         # 2. Check if comparison reports exist
         if video.comparison_reports:
@@ -172,3 +177,86 @@ class VideoService:
             analysis_resp = AnalysisResultResponse.model_validate(a_dict)
             
         return AnalysisResponse(video=video_detail, analysis=analysis_resp)
+
+
+    async def process_video_analysis(self, video_id: uuid.UUID) -> None:
+        video = await self.repository.get_video_with_analysis_result(video_id)
+        video.status = int(VideoStatus.PROCESSING)
+        await self.session.commit()
+        await self.session.refresh(video)
+
+        def status_callback(payload: dict) -> None:
+            status = payload.get("status")
+            logger.info("video analysis status", extra={"status": status, "video_id": str(video_id)})
+
+        logger.info("start downloading video raw file ...", extra={"video_id": str(video_id), "raw_path": video.raw_path})
+
+
+        try:
+            with storage.download_tmp(video.raw_path) as temp_video_path:
+                
+                logger.info("end downloading video raw file ...", extra={"video_id": str(video_id), "raw_path": video.raw_path})
+                analysed_video_name = f"videos/{uuid.uuid4()}.mp4"
+                fps = int(video.fps) if video.fps else None
+                if not fps or fps <= 0:
+                    metadata = get_video_metadata(temp_video_path)
+                    fps = int(metadata.get("fps") or 0)
+                    if fps <= 0:
+                        raise UnprocessableEntityException(detail="视频 FPS 缺失，无法换算预测时间")
+
+                with TempfileManager.create_temp_file(suffix=".mp4") as temp_save_path:
+                    logger.info("start analysing video ...", extra={"video_id": str(video_id), "raw_path": video.raw_path})
+                    # 调用模型分析视频
+                    output = analyse_video(temp_video_path, temp_save_path, status_callback=status_callback)
+                    logger.info("end analysing video ...", extra={"video_id": str(video_id), "raw_path": video.raw_path})
+                    try:
+                        logger.info("start uploading analysed video ...", extra={"video_id": str(video_id), "raw_path": video.raw_path})   
+                        # 上传分析视频到storage
+                        storage.upload_file(
+                                file_path=temp_save_path,
+                                object_name=analysed_video_name,
+                                content_type="video/mp4",
+                            )
+                        logger.info("end uploading analysed video ...", extra={"video_id": str(video_id), "raw_path": video.raw_path})   
+                    except Exception as e:
+                        analysed_video_name = ''
+                        logger.error(f"Failed to save analysed video {video_id}: {e}")
+                    
+
+                start_time = round(output.predict_start / fps, 3)
+                end_time = round(output.predict_end / fps, 3)
+                curve_data = [
+                    {"t": round(frame_idx / fps, 2), "v": float(v)}
+                    for frame_idx, v in zip(output.instantaneous_speed_indexes, output.instantaneous_speeds)
+                ]
+
+                if video.analysis_result:
+                    ar = video.analysis_result
+                    ar.marked_path = analysed_video_name
+                    ar.start_time = start_time
+                    ar.end_time = end_time
+                    ar.init_speed = float(output.init_speed)
+                    ar.avg_speed = float(output.avg_speed)
+                    ar.curve_data = curve_data
+                    ar.processed_at = datetime.utcnow()
+                else:
+                    video.analysis_result = AnalysisResult(
+                        video_id=video.id,
+                        marked_path=analysed_video_name,
+                        start_time=start_time,
+                        end_time=end_time,
+                        init_speed=float(output.init_speed),
+                        avg_speed=float(output.avg_speed),
+                        curve_data=curve_data,
+                        processed_at=datetime.utcnow(),
+                    )
+
+                video.status = int(VideoStatus.COMPLETED)
+                video.error_log = None
+                video.fps = fps
+                await self.session.commit()
+        except Exception as e:
+            video.status = int(VideoStatus.FAILED)
+            video.error_log = str(e)
+            await self.session.commit()
+            raise

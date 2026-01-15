@@ -1,14 +1,24 @@
 
 from minio import Minio
 from datetime import timedelta
+from contextlib import contextmanager
 from io import BytesIO
 from pathlib import Path
+from typing import Generator
 from .config import settings
+from .tempfile_manager import TempfileManager
 
 
 """
-文档：
+Docs:
+
+API quick start
 https://docs.min.io/enterprise/aistor-object-store/developers/sdk/python/
+
+API Reference
+https://docs.min.io/enterprise/aistor-object-store/developers/sdk/python/api/
+
+Github
 https://github.com/minio/minio-py
 """
 
@@ -67,5 +77,38 @@ class MinioStorage:
         """获取文件对象流"""
         return self.client.get_object(self.bucket_name, object_name)
 
+    @contextmanager
+    def download_tmp(
+        self,
+        object_name: str,
+        *,
+        chunk_size: int = 1024 * 1024,
+    ) -> Generator[Path, None, None]:
+        object_path = Path(object_name)
+        suffix = object_path.suffix or '.mp4'
+        prefix = f"minio_{object_path.stem}_" if object_path.stem else "minio_"
+
+        with TempfileManager.create_temp_file(
+            suffix=suffix,
+            prefix=prefix,
+            delete=True,
+        ) as temp_path_str:
+            local_path = Path(temp_path_str)
+
+            response = self.download_file(object_name)
+            try:
+                with open(local_path, "wb") as f:
+                    for chunk in response.stream(chunk_size):
+                        f.write(chunk)
+            finally:
+                try:
+                    response.close()
+                    response.release_conn()
+                except Exception:
+                    pass
+
+            yield local_path
+
+    
 # 实例化
 storage = MinioStorage()

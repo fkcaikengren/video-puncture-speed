@@ -67,6 +67,19 @@ class VideoRepository:
             raise NotFoundException("Video not found")
         return video
 
+    async def get_video_with_analysis_result(self, video_id: uuid.UUID) -> Video:
+        query = (
+            select(Video)
+            .where(Video.id == video_id)
+            .options(selectinload(Video.analysis_result))
+        )
+        result = await self.session.execute(query)
+        video = result.scalar_one_or_none()
+        if not video:
+            raise NotFoundException("Video not found")
+        return video
+
+
     async def get_videos(self, user_id: uuid.UUID, page: int, page_size: int, 
                          keyword: str = None, category_id: int = None, status: int = None, 
                          require_analysis: bool = False) -> tuple[list[Video], int]:

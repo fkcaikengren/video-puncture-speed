@@ -71,3 +71,8 @@ export async function urlToFile(url: string, fileName: string) {
     const mimeType = blob.type;
     return new File([blob], fileName, { type: mimeType });
 }
+
+
+export function isNil<T>(value: T | undefined | null): boolean {
+  return value === undefined || value === null;
+}

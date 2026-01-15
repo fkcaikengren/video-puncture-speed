@@ -18,8 +18,6 @@ __all__ = [
 
 
 
-
-
 def get_coord_min_rect_len(seg_coords: Sequence[int] | NDArray[np.integer] | NDArray[np.floating],):
     """计算多边形坐标的最小外接矩形的长度，这里指的较大的边"""
     arr = np.asarray(seg_coords, dtype=np.float32)
@@ -71,20 +69,19 @@ def fix_to_monotonic_decreasing(lens):
         """
             从峰值开始修正为单调减的序列，
             并且对峰值做了离群点和均值优化
-            
+
             （原地修改list）
         """
 
         if not lens:
             return lens, 0
-            
 
+        # 处理峰值
         arr = np.asarray(lens, dtype=np.float64)
         try:
             peak_idx = int(np.nanargmax(arr))
         except ValueError:
             peak_idx = 0
-
         left = max(0, peak_idx - 4)
         right = min(len(lens) - 1, peak_idx + 4)
         xs = np.arange(left, right + 1, dtype=np.float64)
@@ -111,6 +108,7 @@ def fix_to_monotonic_decreasing(lens):
                 peak_avg = float(np.mean(ys_f))
             lens[0] = peak_avg
 
+        # 单调减
         for i in range(1, len(lens)):
             if lens[i] > lens[i - 1]:
                 lens[i] = lens[i - 1]
@@ -170,18 +168,14 @@ def calc_speed(
         基于视频帧针梗长度，计算穿刺速度
     """
 
-
-
-    def gaussian_smoothing(lens, sigma=3):
+    def _gaussian_smoothing(lens, sigma=3):
         """高斯平滑"""
         return gaussian_filter1d(lens, sigma=sigma).tolist()
-
     
     start_idx, end_idx = start_end
     
     
-    
-    needle_lengths = gaussian_smoothing(lengths) #对长度平滑
+    needle_lengths = _gaussian_smoothing(lengths) #对长度平滑
     start_length = needle_lengths[start_idx]
     end_length = needle_lengths[end_idx]
     if start_length<=0:
@@ -203,13 +197,13 @@ def calc_speed(
     #         break
     
 
-    # -------------- 计算平均速度 START -----------------
-    # 计算长度差值
-    length_diff = max(0.0, (start_length - end_length) * r)
-    # 计算时间差（秒）
-    time_diff = (end_idx - start_idx) / fps
-    # 计算平均速度（长度单位/秒）
-    avg_speed = length_diff / time_diff if time_diff != 0 else 0.0
+    # -------------- 计算平均速度 START  舍弃，采用瞬时速度平均值的方式 -----------------
+    # # 计算长度差值
+    # length_diff = max(0.0, (start_length - end_length) * r)
+    # # 计算时间差（秒）
+    # time_diff = (end_idx - start_idx) / fps
+    # # 计算平均速度（长度单位/秒）
+    # avg_speed = length_diff / time_diff if time_diff != 0 else 0.0
     # -------------- 计算平均速度 END -----------------
 
 
@@ -217,12 +211,36 @@ def calc_speed(
     needle_lengths_diff, needle_lengths_index = calc_length_diff(needle_lengths, swin=swin, step=step)
     swin_time_diff = swin/fps
     instantaneous_speeds = [ (max(0.0, len_diff)*r)/swin_time_diff for len_diff in needle_lengths_diff]
-    # -------------- 计算瞬时速度 END -----------------
 
+    avg_speed = 0.0
+    if instantaneous_speeds:
+        speeds_arr = np.asarray(instantaneous_speeds, dtype=np.float64)
+        idx_arr = np.asarray(needle_lengths_index, dtype=np.int64)
+        in_range_mask = (idx_arr >= start_idx) & (idx_arr + swin - 1 <= end_idx)
+        valid_mask = in_range_mask & np.isfinite(speeds_arr)
+        speeds_valid = speeds_arr[valid_mask]
+
+        if speeds_valid.size > 0:
+            outliers_local = detect_outliers_mad(speeds_valid, threshold=3.5)
+            inliers = speeds_valid[~outliers_local]
+            avg_speed = float(np.mean(inliers)) if inliers.size > 0 else float(np.mean(speeds_valid))
+
+            replace_positions = np.flatnonzero(valid_mask)
+            outlier_positions = replace_positions[outliers_local]
+            for pos in outlier_positions:
+                prev_pos = int(pos) - 1
+                while prev_pos >= 0 and not np.isfinite(speeds_arr[prev_pos]):
+                    prev_pos -= 1
+                if prev_pos >= 0:
+                    speeds_arr[int(pos)] = float(speeds_arr[prev_pos])
+                else:
+                    speeds_arr[int(pos)] = avg_speed
+            instantaneous_speeds = speeds_arr.tolist()
+    # -------------- 计算瞬时速度 END -----------------
 
     # -------------- 计算初始速度 START -----------------
     '''
-        计算若干个速度点的“加速度”。
+        计算若干个速度点的“加速度”（考虑初始加速度的一个合理性）。
         - sum =  instantaneous_speeds[0]
         - sum += instantaneous_speeds[1], 然后判断“加速度”[0] ,若大于2 则停止 sum自增，否则继续加。
         - ...
@@ -256,5 +274,8 @@ def calc_speed(
 
         init_speed = speed_sum / speed_count
     # -------------- 计算初始速度 END -----------------
+
+
+    
 
     return init_speed, avg_speed, instantaneous_speeds

@@ -1112,6 +1112,36 @@ export type GetAnalysisApiVideosAnalysisGetResponses = {
 
 export type GetAnalysisApiVideosAnalysisGetResponse = GetAnalysisApiVideosAnalysisGetResponses[keyof GetAnalysisApiVideosAnalysisGetResponses];
 
+export type AnalyzeVideoApiVideosAnalysisPostData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Id
+         */
+        id: string;
+    };
+    url: '/api/videos/analysis';
+};
+
+export type AnalyzeVideoApiVideosAnalysisPostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type AnalyzeVideoApiVideosAnalysisPostError = AnalyzeVideoApiVideosAnalysisPostErrors[keyof AnalyzeVideoApiVideosAnalysisPostErrors];
+
+export type AnalyzeVideoApiVideosAnalysisPostResponses = {
+    /**
+     * Successful Response
+     */
+    200: BaseResponseDict;
+};
+
+export type AnalyzeVideoApiVideosAnalysisPostResponse = AnalyzeVideoApiVideosAnalysisPostResponses[keyof AnalyzeVideoApiVideosAnalysisPostResponses];
+
 export type GetCategoriesApiCategoriesGetData = {
     body?: never;
     path?: never;

@@ -2,6 +2,7 @@ import os
 import pytest
 import ffmpeg
 from app.core.video import transcode_video, extract_first_frame, get_video_metadata
+from video_work.tools import get_video_resolution_level
 
 # Use the specific video file provided by the user
 REAL_VIDEO_PATH = "/home/tsw/workspace/keyan/videos/needle-videos/video9.mp4"
@@ -95,3 +96,4 @@ def test_get_video_metadata(setup_video_file):
 def test_file_not_found():
     with pytest.raises(FileNotFoundError):
         transcode_video("non_existent.mp4", "output.mp4")
+

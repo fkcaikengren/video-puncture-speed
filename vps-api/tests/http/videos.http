@@ -36,7 +36,12 @@ POST {{baseUrl}}/videos/delete?id=7d040e0b-450d-4716-b39e-84cc960c610d
 Authorization: Bearer {{token}}
 
 ### Get Analysis
-GET {{baseUrl}}/videos/analysis?id=9b098cb0-f9fe-4ace-9e49-1e9f3aabb43d
+GET {{baseUrl}}/videos/analysis?id=1ea6cd38-e7b7-4a34-bd26-d8c437ba0995
+Authorization: Bearer {{token}}
+
+
+### Analyze Video
+POST {{baseUrl}}/videos/analysis?id=1ea6cd38-e7b7-4a34-bd26-d8c437ba0995
 Authorization: Bearer {{token}}
 
 ### Get Categories

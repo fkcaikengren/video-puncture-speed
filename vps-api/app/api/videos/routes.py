@@ -108,6 +108,16 @@ async def get_analysis(
     data = await service.get_analysis(id)
     return BaseResponse(data=data)
 
+
+@router.post("/analysis", response_model=BaseResponse[dict])
+async def analyze_video(
+    id: uuid.UUID,
+    session: AsyncSession = Depends(get_session)
+):
+    service = VideoService(session)
+    await service.process_video_analysis(id)
+    return BaseResponse(data={})
+
 @categories_router.get("/categories", response_model=BaseResponse[List[CategoryResponse]])
 async def get_categories(session: AsyncSession = Depends(get_session)):
     from app.api.videos.repository import VideoRepository

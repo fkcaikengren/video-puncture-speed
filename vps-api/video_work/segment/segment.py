@@ -7,7 +7,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 from torchvision import transforms
-
+from video_work.tools import get_device
 from video_work.models.menet_seg import MENetSeg
 
 
@@ -27,7 +27,7 @@ class Segment:
             return
 
         self.model_path = model_path or DEFAULT_MODEL_PATH
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = get_device()
         self.model = MENetSeg(num_classes=2)
         self._load_weights(self.model, self.model_path, self.device)
         self.model.to(self.device)
