@@ -2,6 +2,8 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { UserResponse } from '@/APIs/types.gen'
 
+import { client } from '@/APIs/client.gen';
+
 interface AuthState {
   token: string | null
   user: UserResponse | null
@@ -14,7 +16,15 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       token: null,
       user: null,
-      setAuth: (token, user) => set({ token, user }),
+      setAuth: (token, user) => {
+        set({ token, user });
+        // 配置全局请求
+        client.setConfig({
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      },
       logout: () => set({ token: null, user: null }),
     }),
     {

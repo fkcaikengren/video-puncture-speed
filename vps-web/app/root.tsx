@@ -20,7 +20,7 @@ import { client } from './APIs/client.gen';
 import { useAuthStore } from './store/useAuthStore';
 
 console.log('useAuthStore.getState().token', useAuthStore.getState().token)
-// 配置全局请求 START      // TODO: 目前问题，login第一次登录后，token为空，导致后续请求失败，这个setConfig的调用时机？
+// 配置全局请求 START    
 client.setConfig({
   // set default base url for requests
   // baseURL: '',
@@ -29,7 +29,6 @@ client.setConfig({
     Authorization: `Bearer ${useAuthStore.getState().token || ''}`,
   },
 });
-
 
 // 配置全局请求 END
 
