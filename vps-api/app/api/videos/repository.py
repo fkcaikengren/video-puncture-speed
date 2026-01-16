@@ -79,6 +79,15 @@ class VideoRepository:
             raise NotFoundException("Video not found")
         return video
 
+    async def get_videos_by_user_with_analysis(self, user_id: uuid.UUID) -> list[Video]:
+        query = (
+            select(Video)
+            .where(Video.user_id == user_id)
+            .options(selectinload(Video.analysis_result))
+        )
+        result = await self.session.execute(query)
+        return result.scalars().all()
+
 
     async def get_videos(self, user_id: uuid.UUID, page: int, page_size: int, 
                          keyword: str = None, category_id: int = None, status: int = None, 
@@ -139,5 +148,17 @@ class VideoRepository:
 
     async def delete_analysis_result_by_video_id(self, video_id: uuid.UUID):
         query = delete(AnalysisResult).where(AnalysisResult.video_id == video_id)
+        await self.session.execute(query)
+        await self.session.commit()
+
+    async def delete_analysis_results_by_video_ids(self, video_ids: list[uuid.UUID]) -> None:
+        if not video_ids:
+            return
+        query = delete(AnalysisResult).where(AnalysisResult.video_id.in_(video_ids))
+        await self.session.execute(query)
+        await self.session.commit()
+
+    async def delete_videos_by_user_id(self, user_id: uuid.UUID) -> None:
+        query = delete(Video).where(Video.user_id == user_id)
         await self.session.execute(query)
         await self.session.commit()

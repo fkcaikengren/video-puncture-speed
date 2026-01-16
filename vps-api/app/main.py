@@ -5,7 +5,7 @@ from app.core.config import settings
 from app.core.logging import get_logger, setup_logging
 from app.core.middlewares import JWTMiddleware, setup_cors_middleware
 from app.core.schemas import BaseResponse
-from app.api.users.routes import router as auth_router, admin_router
+from app.api.users.routes import router as auth_router,user_router, admin_router
 from app.api.videos.routes import router as video_router, categories_router
 from app.api.dashboard.routes import router as dashboard_router
 from app.api.comparisons.routes import router as comparison_router
@@ -28,6 +28,8 @@ app.add_middleware(JWTMiddleware)
 setup_cors_middleware(app)
 v1_router = APIRouter()
 v1_router.include_router(auth_router)
+v1_router.include_router(user_router)
+v1_router.include_router(admin_router)
 v1_router.include_router(video_router)
 v1_router.include_router(categories_router)
 v1_router.include_router(dashboard_router)

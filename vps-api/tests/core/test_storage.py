@@ -30,7 +30,7 @@ def test_storage_integration(storage_service, unique_filename):
     content_type = "text/plain"
     
     # 1. Test Upload
-    uploaded_object_name = storage_service.upload_file(file_data, unique_filename, content_type)
+    uploaded_object_name = storage_service.upload_bytes(file_data, unique_filename, content_type)
     assert uploaded_object_name == unique_filename
     
     # Verify file exists in Minio (using the client directly for verification)

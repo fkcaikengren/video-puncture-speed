@@ -8,7 +8,6 @@ import { VideoCard } from "@/components/video-card"
 import { formatVideo } from "@/utils"
 import { useModal } from "@/lib/react-modal-store"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
 import { useCopyToClipboard } from 'react-use'
 import { toast } from "sonner"
 

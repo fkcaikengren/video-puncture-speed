@@ -51,3 +51,20 @@ class ComparisonRepository:
         )
         await self.session.execute(query)
         await self.session.commit()
+
+    async def delete_by_video_ids(self, video_ids: list[uuid.UUID]):
+        if not video_ids:
+            return
+        query = delete(ComparisonReport).where(
+            or_(
+                ComparisonReport.video_a_id.in_(video_ids),
+                ComparisonReport.video_b_id.in_(video_ids),
+            )
+        )
+        await self.session.execute(query)
+        await self.session.commit()
+
+    async def delete_by_user_id(self, user_id: uuid.UUID):
+        query = delete(ComparisonReport).where(ComparisonReport.user_id == user_id)
+        await self.session.execute(query)
+        await self.session.commit()

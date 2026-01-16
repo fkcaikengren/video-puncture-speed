@@ -15,7 +15,7 @@ async def test_get_stats_me():
     service = DashboardService(mock_session)
     user_id = uuid.uuid4()
     
-    stats = await service.get_stats(user_id, is_admin=False, scope="me")
+    stats = await service.get_stats(user_id)
     
     assert stats.total == 15
     assert stats.pending == 5
@@ -29,26 +29,38 @@ async def test_get_pending_videos():
     
     v1 = MagicMock()
     v1.id = uuid.uuid4()
+    v1.user_id = uuid.uuid4()
     v1.title = "v1"
+    v1.status = 0
     v1.created_at = datetime(2025, 1, 1, 10, 0, 0)
+    v1.raw_path = "path/to/raw1"
     v1.thumbnail_path = "path/to/thumb"
+    v1.uploader = None
+    v1.fps = None
+    v1.duration = None
     
     v2 = MagicMock()
     v2.id = uuid.uuid4()
+    v2.user_id = uuid.uuid4()
     v2.title = "v2"
+    v2.status = 0
     v2.created_at = datetime(2025, 1, 1, 9, 0, 0)
+    v2.raw_path = "path/to/raw2"
     v2.thumbnail_path = None
+    v2.uploader = None
+    v2.fps = None
+    v2.duration = None
     
     mock_result.scalars.return_value.all.return_value = [v1, v2]
     mock_session.execute.return_value = mock_result
     
-    with patch("app.api.dashboard.service.storage") as mock_storage:
+    with patch("app.api.videos.schemas.storage") as mock_storage:
         mock_storage.get_url.return_value = "http://mock-url"
         
         service = DashboardService(mock_session)
         user_id = uuid.uuid4()
         
-        data = await service.get_pending_videos(user_id, is_admin=False)
+        data = await service.get_videos(user_id, status=0)
         
         assert len(data) == 1
         assert data[0].date == "2025-01-01"

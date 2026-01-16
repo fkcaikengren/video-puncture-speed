@@ -1,4 +1,5 @@
 from pydantic import BaseModel, ConfigDict, field_serializer
+from pydantic import Field
 from uuid import UUID
 from datetime import datetime
 from typing import List, Optional
@@ -45,3 +46,8 @@ class UserListResponse(BaseModel):
 
 class SetRoleRequest(BaseModel):
     role: str
+
+
+class UpdatePasswordRequest(BaseModel):
+    old_password: str = Field(..., min_length=1)
+    new_password: str = Field(..., min_length=6)

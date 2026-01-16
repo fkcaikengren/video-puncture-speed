@@ -19,7 +19,7 @@ class Category(Base):
 class Video(Base):
     __tablename__ = "videos"
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
+    user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     category_id: Mapped[int] = mapped_column(Integer, ForeignKey("categories.id"), nullable=True, index=True)
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     raw_path: Mapped[str] = mapped_column(Text, nullable=False)

@@ -13,8 +13,8 @@ import { VideoStatusEnum } from "@/types/video";
 
 
 const schema = zfd.formData({
-  username: zfd.text(),
-  password: zfd.text(z.string().min(6))
+  username: zfd.text(z.string().nonempty('用户名不能为空')),
+  password: zfd.text(z.string().min(6, '密码不能少于6个字符')),
 });
 
 export default function Login() {
@@ -22,7 +22,15 @@ export default function Login() {
   const setAuth = useAuthStore((state) => state.setAuth);
 
   const [error, handleLogin, loading] = useActionState<string | null, FormData>(async (_prevState, formData) => {
-    const payload = schema.parse(formData)
+    let payload: z.infer<typeof schema>;
+    try {
+      payload = schema.parse(formData)
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return error.issues.map((issue) => issue.message).join("\n");
+      }
+      return "发生了未知错误，请稍后重试";
+    }
 
     try {
       const { data, error: apiError } = await loginApiAuthLoginPost({

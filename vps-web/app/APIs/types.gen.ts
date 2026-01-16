@@ -204,6 +204,25 @@ export type BaseResponseUploadResponse = {
 };
 
 /**
+ * BaseResponse[UserListResponse]
+ */
+export type BaseResponseUserListResponse = {
+    /**
+     * Code
+     *
+     * 状态码
+     */
+    code: number;
+    /**
+     * Err Msg
+     *
+     * 错误信息
+     */
+    err_msg: string;
+    data: UserListResponse;
+};
+
+/**
  * BaseResponse[UserResponse]
  */
 export type BaseResponseUserResponse = {
@@ -400,6 +419,16 @@ export type PendingVideoGroup = {
 };
 
 /**
+ * SetRoleRequest
+ */
+export type SetRoleRequest = {
+    /**
+     * Role
+     */
+    role: string;
+};
+
+/**
  * StatsData
  */
 export type StatsData = {
@@ -423,6 +452,20 @@ export type StatsData = {
      * Processing
      */
     processing: number;
+};
+
+/**
+ * UpdatePasswordRequest
+ */
+export type UpdatePasswordRequest = {
+    /**
+     * Old Password
+     */
+    old_password: string;
+    /**
+     * New Password
+     */
+    new_password: string;
 };
 
 /**
@@ -467,6 +510,28 @@ export type UserCreate = {
      * Password
      */
     password: string;
+};
+
+/**
+ * UserListResponse
+ */
+export type UserListResponse = {
+    /**
+     * Items
+     */
+    items: Array<UserResponse>;
+    /**
+     * Total
+     */
+    total: number;
+    /**
+     * Page
+     */
+    page: number;
+    /**
+     * Page Size
+     */
+    page_size: number;
 };
 
 /**
@@ -843,31 +908,6 @@ export type VideoResponseWritable = {
     created_at: string;
 };
 
-export type RegisterApiAuthRegisterPostData = {
-    body: UserCreate;
-    path?: never;
-    query?: never;
-    url: '/api/auth/register';
-};
-
-export type RegisterApiAuthRegisterPostErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type RegisterApiAuthRegisterPostError = RegisterApiAuthRegisterPostErrors[keyof RegisterApiAuthRegisterPostErrors];
-
-export type RegisterApiAuthRegisterPostResponses = {
-    /**
-     * Successful Response
-     */
-    201: BaseResponseUserResponse;
-};
-
-export type RegisterApiAuthRegisterPostResponse = RegisterApiAuthRegisterPostResponses[keyof RegisterApiAuthRegisterPostResponses];
-
 export type LoginApiAuthLoginPostData = {
     body: LoginData;
     path?: never;
@@ -908,6 +948,174 @@ export type GetMeApiAuthMeGetResponses = {
 };
 
 export type GetMeApiAuthMeGetResponse = GetMeApiAuthMeGetResponses[keyof GetMeApiAuthMeGetResponses];
+
+export type UpdatePasswordApiUserPasswordPostData = {
+    body: UpdatePasswordRequest;
+    path?: never;
+    query?: never;
+    url: '/api/user/password';
+};
+
+export type UpdatePasswordApiUserPasswordPostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type UpdatePasswordApiUserPasswordPostError = UpdatePasswordApiUserPasswordPostErrors[keyof UpdatePasswordApiUserPasswordPostErrors];
+
+export type UpdatePasswordApiUserPasswordPostResponses = {
+    /**
+     * Successful Response
+     */
+    200: BaseResponseUserResponse;
+};
+
+export type UpdatePasswordApiUserPasswordPostResponse = UpdatePasswordApiUserPasswordPostResponses[keyof UpdatePasswordApiUserPasswordPostResponses];
+
+export type GetProfileApiUserProfileGetData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/user/profile';
+};
+
+export type GetProfileApiUserProfileGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: BaseResponseUserResponse;
+};
+
+export type GetProfileApiUserProfileGetResponse = GetProfileApiUserProfileGetResponses[keyof GetProfileApiUserProfileGetResponses];
+
+export type GetUsersApiAdminUsersGetData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Page
+         */
+        page?: number;
+        /**
+         * Page Size
+         */
+        page_size?: number;
+        /**
+         * Keyword
+         */
+        keyword?: string;
+        /**
+         * Role
+         */
+        role?: string;
+    };
+    url: '/api/admin/users';
+};
+
+export type GetUsersApiAdminUsersGetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetUsersApiAdminUsersGetError = GetUsersApiAdminUsersGetErrors[keyof GetUsersApiAdminUsersGetErrors];
+
+export type GetUsersApiAdminUsersGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: BaseResponseUserListResponse;
+};
+
+export type GetUsersApiAdminUsersGetResponse = GetUsersApiAdminUsersGetResponses[keyof GetUsersApiAdminUsersGetResponses];
+
+export type CreateUserAdminApiAdminUsersCreatePostData = {
+    body: UserCreate;
+    path?: never;
+    query?: never;
+    url: '/api/admin/users/create';
+};
+
+export type CreateUserAdminApiAdminUsersCreatePostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CreateUserAdminApiAdminUsersCreatePostError = CreateUserAdminApiAdminUsersCreatePostErrors[keyof CreateUserAdminApiAdminUsersCreatePostErrors];
+
+export type CreateUserAdminApiAdminUsersCreatePostResponses = {
+    /**
+     * Successful Response
+     */
+    200: BaseResponseDict;
+};
+
+export type CreateUserAdminApiAdminUsersCreatePostResponse = CreateUserAdminApiAdminUsersCreatePostResponses[keyof CreateUserAdminApiAdminUsersCreatePostResponses];
+
+export type DeleteUserAdminApiAdminUsersDeletePostData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * User Id
+         */
+        user_id: string;
+    };
+    url: '/api/admin/users/delete';
+};
+
+export type DeleteUserAdminApiAdminUsersDeletePostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type DeleteUserAdminApiAdminUsersDeletePostError = DeleteUserAdminApiAdminUsersDeletePostErrors[keyof DeleteUserAdminApiAdminUsersDeletePostErrors];
+
+export type DeleteUserAdminApiAdminUsersDeletePostResponses = {
+    /**
+     * Successful Response
+     */
+    200: BaseResponseDict;
+};
+
+export type DeleteUserAdminApiAdminUsersDeletePostResponse = DeleteUserAdminApiAdminUsersDeletePostResponses[keyof DeleteUserAdminApiAdminUsersDeletePostResponses];
+
+export type SetRoleApiAdminUsersSetRolePostData = {
+    body: SetRoleRequest;
+    path?: never;
+    query: {
+        /**
+         * User Id
+         */
+        user_id: string;
+    };
+    url: '/api/admin/users/set-role';
+};
+
+export type SetRoleApiAdminUsersSetRolePostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type SetRoleApiAdminUsersSetRolePostError = SetRoleApiAdminUsersSetRolePostErrors[keyof SetRoleApiAdminUsersSetRolePostErrors];
+
+export type SetRoleApiAdminUsersSetRolePostResponses = {
+    /**
+     * Successful Response
+     */
+    200: BaseResponseDict;
+};
+
+export type SetRoleApiAdminUsersSetRolePostResponse = SetRoleApiAdminUsersSetRolePostResponses[keyof SetRoleApiAdminUsersSetRolePostResponses];
 
 export type GetVideosApiVideosGetData = {
     body?: never;
@@ -1178,7 +1386,10 @@ export type GetVideosApiDashboardVideosGetData = {
     body?: never;
     path?: never;
     query?: {
-        status?: VideoStatus;
+        /**
+         * Status
+         */
+        status?: VideoStatus | null;
     };
     url: '/api/dashboard/videos';
 };

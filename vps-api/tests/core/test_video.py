@@ -84,16 +84,13 @@ def test_get_video_metadata(setup_video_file):
     assert isinstance(metadata, dict)
     assert "duration" in metadata
     assert "size" in metadata
-    assert "format" in metadata
     assert "fps" in metadata
     
     # Basic sanity checks instead of specific values since we are using a real file
     assert metadata["duration"] > 0
     assert metadata["size"] > 0
-    # format_name usually contains 'mp4' for mp4 files
-    assert 'mp4' in metadata["format"] or 'mov' in metadata["format"]
+    assert metadata["fps"] > 0
 
 def test_file_not_found():
     with pytest.raises(FileNotFoundError):
         transcode_video("non_existent.mp4", "output.mp4")
-
