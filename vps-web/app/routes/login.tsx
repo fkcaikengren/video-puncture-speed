@@ -8,6 +8,9 @@ import { useAuthStore } from "@/store/useAuthStore"
 import loginDec from "@/assets/login_dec.png"
 import { z } from "zod";
 import { zfd } from "zod-form-data";
+import { VideoStatusEnum } from "@/types/video";
+
+
 
 const schema = zfd.formData({
   username: zfd.text(),
@@ -33,7 +36,7 @@ export default function Login() {
         return data?.err_msg || "Unknown error occurred"
       }
       setAuth(data.data.token, data.data.user);
-      navigate("/dashboard");
+      navigate(`/dashboard?status=${VideoStatusEnum.PENDING}`);
       return null;
     } catch (err) {
       return "An unexpected error occurred. Please try again."

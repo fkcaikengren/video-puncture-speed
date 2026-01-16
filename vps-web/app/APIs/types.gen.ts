@@ -1161,23 +1161,9 @@ export type GetCategoriesApiCategoriesGetResponse = GetCategoriesApiCategoriesGe
 export type GetStatsApiDashboardStatsGetData = {
     body?: never;
     path?: never;
-    query?: {
-        /**
-         * Scope
-         */
-        scope?: string;
-    };
+    query?: never;
     url: '/api/dashboard/stats';
 };
-
-export type GetStatsApiDashboardStatsGetErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type GetStatsApiDashboardStatsGetError = GetStatsApiDashboardStatsGetErrors[keyof GetStatsApiDashboardStatsGetErrors];
 
 export type GetStatsApiDashboardStatsGetResponses = {
     /**
@@ -1188,21 +1174,32 @@ export type GetStatsApiDashboardStatsGetResponses = {
 
 export type GetStatsApiDashboardStatsGetResponse = GetStatsApiDashboardStatsGetResponses[keyof GetStatsApiDashboardStatsGetResponses];
 
-export type GetPendingVideosApiDashboardPendingVideosGetData = {
+export type GetVideosApiDashboardVideosGetData = {
     body?: never;
     path?: never;
-    query?: never;
-    url: '/api/dashboard/pending-videos';
+    query?: {
+        status?: VideoStatus;
+    };
+    url: '/api/dashboard/videos';
 };
 
-export type GetPendingVideosApiDashboardPendingVideosGetResponses = {
+export type GetVideosApiDashboardVideosGetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetVideosApiDashboardVideosGetError = GetVideosApiDashboardVideosGetErrors[keyof GetVideosApiDashboardVideosGetErrors];
+
+export type GetVideosApiDashboardVideosGetResponses = {
     /**
      * Successful Response
      */
     200: BaseResponseListPendingVideoGroup;
 };
 
-export type GetPendingVideosApiDashboardPendingVideosGetResponse = GetPendingVideosApiDashboardPendingVideosGetResponses[keyof GetPendingVideosApiDashboardPendingVideosGetResponses];
+export type GetVideosApiDashboardVideosGetResponse = GetVideosApiDashboardVideosGetResponses[keyof GetVideosApiDashboardVideosGetResponses];
 
 export type AiAnalyzeApiComparisonsAiAnalyzePostData = {
     body: AiAnalyzeRequest;

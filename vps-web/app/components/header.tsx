@@ -23,12 +23,8 @@ export function Header() {
         <Separator orientation="vertical" className="mr-2 h-4" />
         <Breadcrumb>
           <BreadcrumbList>
-            <BreadcrumbItem className="hidden md:block">
-              <BreadcrumbLink href="/">
-                Home
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            {pathnames.length > 0 && <BreadcrumbSeparator className="hidden md:block" />}
+           
+            
             {pathnames.map((value, index) => {
               const to = `/${pathnames.slice(0, index + 1).join("/")}`;
               const isLast = index === pathnames.length - 1;
