@@ -106,7 +106,7 @@ export default function VideoAnalysis() {
             </div>
 
             <div ref={curveContainerRef} className="flex-1 flex flex-col gap-4 h-full overflow-auto">
-                <Card className="flex-1">
+                <Card className="flex-1 gap-0">
                     <CardHeader>
                         <CardTitle>速度曲线</CardTitle>
                         <CardAction>

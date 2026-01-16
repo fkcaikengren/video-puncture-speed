@@ -122,7 +122,7 @@ export default function SpeedMultiCurveChart({
       },
       xAxis: {
         type: "category",
-        name: "区间",
+        name: "百等分区间",
         boundaryGap: false,
         data: xAxisData,
       },
