@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, type ReactNode } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
@@ -114,7 +114,7 @@ function VideoSearchListContent({
   };
 
   const paginationItems = useMemo(() => {
-    const items: JSX.Element[] = [];
+    const items: ReactNode[] = [];
     const maxVisiblePages = 5;
     let startPage = Math.max(1, params.page - Math.floor(maxVisiblePages / 2));
     let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);

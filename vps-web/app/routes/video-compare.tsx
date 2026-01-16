@@ -1,121 +1,76 @@
-import { Suspense, use, useState } from "react";
-import { useLoaderData, useSearchParams } from "react-router";
+import { useState } from "react";
+import { useSearchParams } from "react-router";
+import { useQuery } from "@tanstack/react-query";
 import { useMeasure } from "react-use";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getAnalysisApiVideosAnalysisGet } from "@/APIs";
-import type { VideoDetailResponse, BaseResponseAnalysisResponse, AnalysisResultResponse } from "@/APIs/types.gen";
+import type { VideoDetailResponse, AnalysisResultResponse } from "@/APIs/types.gen";
 import VideoPlayCard from "@/components/video-play-card";
 import VideoGridSkeleton from "@/components/video-grid-skeleton";
 import type { SpeedCurveChartData } from "@/components/speed-curve-chart";
 import SpeedMultiCurveChart from "@/components/speed-multi-curve-chart";
 import { useModal } from "@/lib/react-modal-store";
 
-type AnalysisPromise = Promise<
-  | {
-      data: BaseResponseAnalysisResponse;
-      error: undefined;
-    }
-  | {
-      data: undefined;
-      error: unknown;
-    }
->;
-
-export async function clientLoader({ request }: { request: Request }) {
-  const url = new URL(request.url);
-  const aid = url.searchParams.get("aid") ?? "";
-  const bid = url.searchParams.get("bid") ?? "";
-
-  const myAnalysisPromise = aid
-    ? (getAnalysisApiVideosAnalysisGet({ query: { id: aid } }) as AnalysisPromise)
-    : null;
-
-  const comparedAnalysisPromise = bid
-    ? (getAnalysisApiVideosAnalysisGet({
-        query: { id: bid },
-      }) as AnalysisPromise)
-    : null;
-
-  return { aid, bid, myAnalysisPromise, comparedAnalysisPromise };
-}
-
 export default function VideoCompare() {
-  const { aid, bid, myAnalysisPromise, comparedAnalysisPromise } =
-    useLoaderData<typeof clientLoader>();
-
-  return (
-    <Suspense
-      fallback={<VideoGridSkeleton />}
-      key={`${aid || "no-aid"}-${bid || "no-bid"}`}
-    >
-      <VideoCompareContent
-        aid={aid}
-        bid={bid}
-        myAnalysisPromise={myAnalysisPromise}
-        comparedAnalysisPromise={comparedAnalysisPromise}
-      />
-    </Suspense>
-  );
-}
-
-function VideoCompareContent({
-  aid,
-  bid,
-  myAnalysisPromise,
-  comparedAnalysisPromise,
-}: {
-  aid: string;
-  bid: string;
-  myAnalysisPromise: AnalysisPromise | null;
-  comparedAnalysisPromise: AnalysisPromise | null;
-}) {
   const [searchParams, setSearchParams] = useSearchParams();
+  const aid = searchParams.get("aid") ?? "";
+  const bid = searchParams.get("bid") ?? "";
+
   const openModal = useModal();
   const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
   const [curveContainerRef, { height: curveContainerHeight }] = useMeasure<HTMLDivElement>();
 
+  const myQuery = useQuery({
+    queryKey: ["analysis", aid],
+    queryFn: async () => getAnalysisApiVideosAnalysisGet({ query: { id: aid }, throwOnError: true }),
+    enabled: Boolean(aid),
+    staleTime: 30_000,
+  });
 
-  const myResult = myAnalysisPromise ? use(myAnalysisPromise) : null;
-  const comparedResult = comparedAnalysisPromise ? use(comparedAnalysisPromise) : null;
+  const comparedQuery = useQuery({
+    queryKey: ["analysis", bid],
+    queryFn: async () => getAnalysisApiVideosAnalysisGet({ query: { id: bid }, throwOnError: true }),
+    enabled: Boolean(bid),
+    staleTime: 30_000,
+  });
 
-  const myResponse = myResult?.data;
-  const comparedResponse = comparedResult?.data;
+
+  const myResponse = myQuery.data?.data;
+  const comparedResponse = comparedQuery.data?.data;
 
   const videoA = (myResponse?.data?.video || {}) as VideoDetailResponse;
   const videoB = (comparedResponse?.data?.video || {}) as VideoDetailResponse;
 
-  const myAnalysis = myResponse?.data?.analysis ?? ({} as AnalysisResultResponse);
-  const comparedAnalysis = comparedResponse?.data?.analysis ?? ({} as AnalysisResultResponse);
+  const analysisA = myResponse?.data?.analysis ?? ({} as AnalysisResultResponse);
+  const analysisB = comparedResponse?.data?.analysis ?? ({} as AnalysisResultResponse);
 
-  const curveData1: SpeedCurveChartData = Array.isArray(myAnalysis.curve_data)
-    ? (myAnalysis.curve_data as SpeedCurveChartData)
+  const curveDataA: SpeedCurveChartData = Array.isArray(analysisA.curve_data)
+    ? (analysisA.curve_data as SpeedCurveChartData)
     : [];
-  const curveData2: SpeedCurveChartData = Array.isArray(comparedAnalysis.curve_data)
-    ? (comparedAnalysis.curve_data as SpeedCurveChartData)
+  const curveDataB: SpeedCurveChartData = Array.isArray(analysisB.curve_data)
+    ? (analysisB.curve_data as SpeedCurveChartData)
     : [];
 
-  const updateSearchParams = (patch: { aid?: string; bid?: string }) => {
-    const next = new URLSearchParams(searchParams);
-    const nextAid = patch.aid ?? aid;
-    const nextBid = patch.bid ?? bid;
-
-    next.delete("id");
-    next.delete("comparedId");
-    next.delete("compareId");
-
-    if (nextAid) next.set("aid", nextAid);
-    else next.delete("aid");
-
-    if (nextBid) next.set("bid", nextBid);
-    else next.delete("bid");
-
-    setSearchParams(next);
+  const updateSearchParams = ({ aid: nextAid, bid: nextBid }: { aid?: string; bid?: string }) => {
+    setSearchParams((prev) => {
+      const nextSearchParams = new URLSearchParams(prev);
+      if (typeof nextAid === "string") {
+        if (nextAid) nextSearchParams.set("aid", nextAid);
+        else nextSearchParams.delete("aid");
+        nextSearchParams.delete("id");
+      }
+      if (typeof nextBid === "string") {
+        if (nextBid) nextSearchParams.set("bid", nextBid);
+        else nextSearchParams.delete("bid");
+      }
+      return nextSearchParams;
+    });
   };
 
   const openMyVideoSelectModal = () =>
     openModal("VideoSelectModal", {
-      title: "选择对比视频",
+      title: "选择A视频",
       disabledVideoIds: bid ? [bid] : undefined,
       onSelectVideoId: (videoId: string) => {
         if (!videoId) return;
@@ -126,7 +81,7 @@ function VideoCompareContent({
 
   const openComparedVideoSelectModal = () =>
     openModal("VideoSelectModal", {
-      title: "选择对比视频",
+      title: "选择B视频",
       disabledVideoIds: aid ? [aid] : undefined,
       onSelectVideoId: (videoId: string) => {
         if (!videoId) return;
@@ -144,8 +99,8 @@ function VideoCompareContent({
   return (
     <div className="flex flex-row gap-6 h-[calc(100vh-100px)]">
       <div className="flex flex-col gap-4 h-full min-h-0">
-        <VideoPlayCard title="A视频" url={videoA.url || ""} supportChildren>
-          {!videoA.url ? (
+        <VideoPlayCard title={`A视频 - ${videoA.title}`} url={analysisA.marked_url || ""} supportChildren>
+          {!analysisA.marked_url ? (
             <div className="absolute left-0 top-0 right-0 bottom-0 bg-white flex items-center justify-center">
               <Button
                 type="button"
@@ -160,7 +115,7 @@ function VideoCompareContent({
           ) : (
             <Button
               type="button"
-              className="absolute left-1 top-1 bg-black text-white hover:bg-black/90 cursor-pointer"
+              className="absolute left-1 top-1 z-10 bg-black/60 text-white hover:bg-black cursor-pointer"
               size="sm"
               onClick={openMyVideoSelectModal}
             >
@@ -169,8 +124,8 @@ function VideoCompareContent({
           )}
         </VideoPlayCard>
 
-        <VideoPlayCard title="B视频" url={videoB.url || ""} supportChildren>
-          {!videoB.url ? (
+        <VideoPlayCard title={`B视频 - ${videoB.title}`} url={analysisB.marked_url || ""} supportChildren>
+          {!analysisB.marked_url ? (
             <div className="absolute left-0 top-0 right-0 bottom-0 bg-white flex items-center justify-center">
               <Button
                 type="button"
@@ -185,7 +140,7 @@ function VideoCompareContent({
           ) : (
             <Button
               type="button"
-              className="absolute left-1 top-1 bg-black text-white hover:bg-black/90 cursor-pointer"
+              className="absolute left-1 top-1 z-20 bg-black/60 text-white hover:bg-black cursor-pointer"
               size="sm"
               onClick={openComparedVideoSelectModal}
             >
@@ -196,16 +151,36 @@ function VideoCompareContent({
       </div>
 
       <div ref={curveContainerRef} className="flex-1 flex flex-col gap-4 h-full overflow-auto">
+        {(myQuery.isError || comparedQuery.isError) && (
+          <div className="space-y-2">
+            {myQuery.isError && (
+              <div className="text-sm text-destructive">A视频加载失败：{String(myQuery.error)}</div>
+            )}
+            {comparedQuery.isError && (
+              <div className="text-sm text-destructive">B视频加载失败：{String(comparedQuery.error)}</div>
+            )}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                if (myQuery.isError) myQuery.refetch();
+                if (comparedQuery.isError) comparedQuery.refetch();
+              }}
+            >
+              重试
+            </Button>
+          </div>
+        )}
         <Card className="flex-1">
           <CardHeader>
-            <CardTitle>速度曲线</CardTitle>
+            <CardTitle>A/B速度曲线</CardTitle>
           </CardHeader>
           <CardContent className="h-full">
             <SpeedMultiCurveChart
-              curveData1={curveData1}
-              curveData2={curveData2}
-              name1="我的视频"
-              name2="对比视频"
+              curveData1={curveDataA}
+              curveData2={curveDataB}
+              name1="A视频"
+              name2="B视频"
               style={{ height: curveContainerHeight * 0.5 }}
             />
           </CardContent>
