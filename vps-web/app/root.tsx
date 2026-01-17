@@ -14,13 +14,28 @@ import { ModalStore, useModal } from '@/lib/react-modal-store';
 import { modalMap } from './components/modals';
 import { Toaster } from "@/components/ui/sonner"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-
+import { toast } from "sonner";
 
 import { client } from './APIs/client.gen';
 import { useAuthStore } from './store/useAuthStore';
 
-console.log('useAuthStore.getState().token', useAuthStore.getState().token)
 // 配置全局请求 START    
+client.interceptors.request.use((config) => {
+  // 处理全局请求，例如添加全局请求头
+  return config;
+})
+client.interceptors.response.use((response) => {
+  if(response.status === 403){
+    toast.error('您没有权限访问该资源')
+  }
+  // 处理全局响应，例如添加全局错误处理
+  if (response.status === 401) {
+    // 处理未授权错误，例如跳转到登录页
+    useAuthStore.getState().logout();
+    window.location.href = '/login';
+  }
+  return response;
+})
 client.setConfig({
   // set default base url for requests
   // baseURL: '',

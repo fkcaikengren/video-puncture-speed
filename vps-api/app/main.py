@@ -4,8 +4,8 @@ from fastapi.responses import JSONResponse
 from app.core.config import settings
 from app.core.logging import get_logger, setup_logging
 from app.core.middlewares import JWTMiddleware, setup_cors_middleware
-from app.core.schemas import BaseResponse
-from app.api.users.routes import router as auth_router,user_router, admin_router
+from app.core.schemas import ApiErrorResponse
+from app.api.users.routes import router as auth_router, user_router, admin_router
 from app.api.videos.routes import router as video_router, categories_router
 from app.api.dashboard.routes import router as dashboard_router
 from app.api.comparisons.routes import router as comparison_router
@@ -23,6 +23,15 @@ logger = get_logger(__name__)
 app = FastAPI(
     title=settings.PROJECT_NAME,
     debug=settings.DEBUG,
+    responses={
+        400: {"model": ApiErrorResponse, "description": "Bad Request"},
+        401: {"model": ApiErrorResponse, "description": "Unauthorized"},
+        403: {"model": ApiErrorResponse, "description": "Forbidden"},
+        404: {"model": ApiErrorResponse, "description": "Not Found"},
+        409: {"model": ApiErrorResponse, "description": "Conflict"},
+        422: {"model": ApiErrorResponse, "description": "Validation Error"},
+        500: {"model": ApiErrorResponse, "description": "Internal Server Error"},
+    },
 )
 app.add_middleware(JWTMiddleware)
 setup_cors_middleware(app)
@@ -42,7 +51,7 @@ app.include_router(v1_router, prefix="/api")
 async def http_exception_handler(request: Request, exc: HTTPException):
     return JSONResponse(
         status_code=exc.status_code,
-        content=BaseResponse(
+        content=ApiErrorResponse(
             code=exc.status_code,
             err_msg=str(exc.detail),
             data=None,
@@ -53,7 +62,7 @@ async def http_exception_handler(request: Request, exc: HTTPException):
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     return JSONResponse(
         status_code=422,
-        content=BaseResponse(
+        content=ApiErrorResponse(
             code=422,
             err_msg="Request validation error",
             data=None,
@@ -65,7 +74,7 @@ async def unhandled_exception_handler(request: Request, exc: Exception):
     logger.exception("Unhandled exception")
     return JSONResponse(
         status_code=500,
-        content=BaseResponse(
+        content=ApiErrorResponse(
             code=500,
             err_msg="Internal server error",
             data=None,
@@ -80,7 +89,6 @@ async def health_check():
 
 @app.get("/api/")
 async def root():
-    logger.debug("Root endpoint called")
     return {"message": "Welcome to Hero API!"}
 
 

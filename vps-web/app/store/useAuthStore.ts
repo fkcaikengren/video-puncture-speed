@@ -5,8 +5,8 @@ import type { UserResponse } from '@/APIs/types.gen'
 import { client } from '@/APIs/client.gen';
 
 interface AuthState {
-  token: string | null
-  user: UserResponse | null
+  token: string | null | undefined
+  user: UserResponse | null | undefined
   setAuth: (token: string, user: UserResponse) => void
   logout: () => void
 }

@@ -33,10 +33,23 @@ async def test_get_videos():
     with patch("app.api.videos.schemas.storage") as mock_storage:
         mock_storage.get_url.return_value = "http://url"
         
-        result = await service.get_videos(uuid.uuid4(), 1, 10)
+        result = await service.get_videos(1, 10, user_id=uuid.uuid4())
         assert result.total == 1
         assert len(result.items) == 1
         assert result.items[0].thumbnail_url == "http://url"
+
+@pytest.mark.asyncio
+async def test_get_videos_pass_uploader_filter():
+    mock_session = AsyncMock()
+    service = VideoService(mock_session)
+    
+    service.repository = MagicMock()
+    service.repository.get_videos = AsyncMock(return_value=([], 0))
+    
+    await service.get_videos(1, 10, uploader="alice")
+    kwargs = service.repository.get_videos.await_args.kwargs
+    assert kwargs["uploader"] == "alice"
+    assert kwargs["user_id"] is None
 
 @pytest.mark.asyncio
 async def test_delete_video():

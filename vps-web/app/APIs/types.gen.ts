@@ -65,6 +65,28 @@ export type AnalysisResultResponse = {
 };
 
 /**
+ * ApiErrorResponse
+ */
+export type ApiErrorResponse = {
+    /**
+     * Code
+     *
+     * 状态码
+     */
+    code: number;
+    /**
+     * Err Msg
+     *
+     * 错误信息
+     */
+    err_msg: string;
+    /**
+     * Data
+     */
+    data: null;
+};
+
+/**
  * BaseResponse[AnalysisResponse]
  */
 export type BaseResponseAnalysisResponse = {
@@ -144,6 +166,28 @@ export type BaseResponseListPendingVideoGroup = {
      * Data
      */
     data: Array<PendingVideoGroup>;
+};
+
+/**
+ * BaseResponse[List[str]]
+ */
+export type BaseResponseListStr = {
+    /**
+     * Code
+     *
+     * 状态码
+     */
+    code: number;
+    /**
+     * Err Msg
+     *
+     * 错误信息
+     */
+    err_msg: string;
+    /**
+     * Data
+     */
+    data: Array<string>;
 };
 
 /**
@@ -370,16 +414,6 @@ export type ComparisonReportResponse = {
 };
 
 /**
- * HTTPValidationError
- */
-export type HttpValidationError = {
-    /**
-     * Detail
-     */
-    detail?: Array<ValidationError>;
-};
-
-/**
  * LoginData
  */
 export type LoginData = {
@@ -558,24 +592,6 @@ export type UserResponse = {
      * Updated At
      */
     updated_at: string;
-};
-
-/**
- * ValidationError
- */
-export type ValidationError = {
-    /**
-     * Location
-     */
-    loc: Array<string | number>;
-    /**
-     * Message
-     */
-    msg: string;
-    /**
-     * Error Type
-     */
-    type: string;
 };
 
 /**
@@ -917,9 +933,33 @@ export type LoginApiAuthLoginPostData = {
 
 export type LoginApiAuthLoginPostErrors = {
     /**
+     * Bad Request
+     */
+    400: ApiErrorResponse;
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ApiErrorResponse;
+    /**
      * Validation Error
      */
-    422: HttpValidationError;
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
 };
 
 export type LoginApiAuthLoginPostError = LoginApiAuthLoginPostErrors[keyof LoginApiAuthLoginPostErrors];
@@ -940,6 +980,39 @@ export type GetMeApiAuthMeGetData = {
     url: '/api/auth/me';
 };
 
+export type GetMeApiAuthMeGetErrors = {
+    /**
+     * Bad Request
+     */
+    400: ApiErrorResponse;
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ApiErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
+};
+
+export type GetMeApiAuthMeGetError = GetMeApiAuthMeGetErrors[keyof GetMeApiAuthMeGetErrors];
+
 export type GetMeApiAuthMeGetResponses = {
     /**
      * Successful Response
@@ -958,9 +1031,33 @@ export type UpdatePasswordApiUserPasswordPostData = {
 
 export type UpdatePasswordApiUserPasswordPostErrors = {
     /**
+     * Bad Request
+     */
+    400: ApiErrorResponse;
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ApiErrorResponse;
+    /**
      * Validation Error
      */
-    422: HttpValidationError;
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
 };
 
 export type UpdatePasswordApiUserPasswordPostError = UpdatePasswordApiUserPasswordPostErrors[keyof UpdatePasswordApiUserPasswordPostErrors];
@@ -980,6 +1077,39 @@ export type GetProfileApiUserProfileGetData = {
     query?: never;
     url: '/api/user/profile';
 };
+
+export type GetProfileApiUserProfileGetErrors = {
+    /**
+     * Bad Request
+     */
+    400: ApiErrorResponse;
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ApiErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
+};
+
+export type GetProfileApiUserProfileGetError = GetProfileApiUserProfileGetErrors[keyof GetProfileApiUserProfileGetErrors];
 
 export type GetProfileApiUserProfileGetResponses = {
     /**
@@ -1016,9 +1146,33 @@ export type GetUsersApiAdminUsersGetData = {
 
 export type GetUsersApiAdminUsersGetErrors = {
     /**
+     * Bad Request
+     */
+    400: ApiErrorResponse;
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ApiErrorResponse;
+    /**
      * Validation Error
      */
-    422: HttpValidationError;
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
 };
 
 export type GetUsersApiAdminUsersGetError = GetUsersApiAdminUsersGetErrors[keyof GetUsersApiAdminUsersGetErrors];
@@ -1041,9 +1195,33 @@ export type CreateUserAdminApiAdminUsersCreatePostData = {
 
 export type CreateUserAdminApiAdminUsersCreatePostErrors = {
     /**
+     * Bad Request
+     */
+    400: ApiErrorResponse;
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ApiErrorResponse;
+    /**
      * Validation Error
      */
-    422: HttpValidationError;
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
 };
 
 export type CreateUserAdminApiAdminUsersCreatePostError = CreateUserAdminApiAdminUsersCreatePostErrors[keyof CreateUserAdminApiAdminUsersCreatePostErrors];
@@ -1071,9 +1249,33 @@ export type DeleteUserAdminApiAdminUsersDeletePostData = {
 
 export type DeleteUserAdminApiAdminUsersDeletePostErrors = {
     /**
+     * Bad Request
+     */
+    400: ApiErrorResponse;
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ApiErrorResponse;
+    /**
      * Validation Error
      */
-    422: HttpValidationError;
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
 };
 
 export type DeleteUserAdminApiAdminUsersDeletePostError = DeleteUserAdminApiAdminUsersDeletePostErrors[keyof DeleteUserAdminApiAdminUsersDeletePostErrors];
@@ -1101,9 +1303,33 @@ export type SetRoleApiAdminUsersSetRolePostData = {
 
 export type SetRoleApiAdminUsersSetRolePostErrors = {
     /**
+     * Bad Request
+     */
+    400: ApiErrorResponse;
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ApiErrorResponse;
+    /**
      * Validation Error
      */
-    422: HttpValidationError;
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
 };
 
 export type SetRoleApiAdminUsersSetRolePostError = SetRoleApiAdminUsersSetRolePostErrors[keyof SetRoleApiAdminUsersSetRolePostErrors];
@@ -1141,15 +1367,43 @@ export type GetVideosApiVideosGetData = {
          * Status
          */
         status?: number;
+        /**
+         * Uploader
+         */
+        uploader?: string;
     };
     url: '/api/videos';
 };
 
 export type GetVideosApiVideosGetErrors = {
     /**
+     * Bad Request
+     */
+    400: ApiErrorResponse;
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ApiErrorResponse;
+    /**
      * Validation Error
      */
-    422: HttpValidationError;
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
 };
 
 export type GetVideosApiVideosGetError = GetVideosApiVideosGetErrors[keyof GetVideosApiVideosGetErrors];
@@ -1189,9 +1443,33 @@ export type GetCandidatesApiVideosCandidatesGetData = {
 
 export type GetCandidatesApiVideosCandidatesGetErrors = {
     /**
+     * Bad Request
+     */
+    400: ApiErrorResponse;
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ApiErrorResponse;
+    /**
      * Validation Error
      */
-    422: HttpValidationError;
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
 };
 
 export type GetCandidatesApiVideosCandidatesGetError = GetCandidatesApiVideosCandidatesGetErrors[keyof GetCandidatesApiVideosCandidatesGetErrors];
@@ -1219,9 +1497,33 @@ export type GetVideoDetailApiVideosDetailGetData = {
 
 export type GetVideoDetailApiVideosDetailGetErrors = {
     /**
+     * Bad Request
+     */
+    400: ApiErrorResponse;
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ApiErrorResponse;
+    /**
      * Validation Error
      */
-    422: HttpValidationError;
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
 };
 
 export type GetVideoDetailApiVideosDetailGetError = GetVideoDetailApiVideosDetailGetErrors[keyof GetVideoDetailApiVideosDetailGetErrors];
@@ -1244,9 +1546,33 @@ export type UploadVideoApiVideosUploadPostData = {
 
 export type UploadVideoApiVideosUploadPostErrors = {
     /**
+     * Bad Request
+     */
+    400: ApiErrorResponse;
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ApiErrorResponse;
+    /**
      * Validation Error
      */
-    422: HttpValidationError;
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
 };
 
 export type UploadVideoApiVideosUploadPostError = UploadVideoApiVideosUploadPostErrors[keyof UploadVideoApiVideosUploadPostErrors];
@@ -1274,9 +1600,33 @@ export type DeleteVideoApiVideosDeletePostData = {
 
 export type DeleteVideoApiVideosDeletePostErrors = {
     /**
+     * Bad Request
+     */
+    400: ApiErrorResponse;
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ApiErrorResponse;
+    /**
      * Validation Error
      */
-    422: HttpValidationError;
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
 };
 
 export type DeleteVideoApiVideosDeletePostError = DeleteVideoApiVideosDeletePostErrors[keyof DeleteVideoApiVideosDeletePostErrors];
@@ -1304,9 +1654,33 @@ export type GetAnalysisApiVideosAnalysisGetData = {
 
 export type GetAnalysisApiVideosAnalysisGetErrors = {
     /**
+     * Bad Request
+     */
+    400: ApiErrorResponse;
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ApiErrorResponse;
+    /**
      * Validation Error
      */
-    422: HttpValidationError;
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
 };
 
 export type GetAnalysisApiVideosAnalysisGetError = GetAnalysisApiVideosAnalysisGetErrors[keyof GetAnalysisApiVideosAnalysisGetErrors];
@@ -1334,9 +1708,33 @@ export type AnalyzeVideoApiVideosAnalysisPostData = {
 
 export type AnalyzeVideoApiVideosAnalysisPostErrors = {
     /**
+     * Bad Request
+     */
+    400: ApiErrorResponse;
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ApiErrorResponse;
+    /**
      * Validation Error
      */
-    422: HttpValidationError;
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
 };
 
 export type AnalyzeVideoApiVideosAnalysisPostError = AnalyzeVideoApiVideosAnalysisPostErrors[keyof AnalyzeVideoApiVideosAnalysisPostErrors];
@@ -1350,12 +1748,94 @@ export type AnalyzeVideoApiVideosAnalysisPostResponses = {
 
 export type AnalyzeVideoApiVideosAnalysisPostResponse = AnalyzeVideoApiVideosAnalysisPostResponses[keyof AnalyzeVideoApiVideosAnalysisPostResponses];
 
+export type GetUploadersApiVideosUploadersGetData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/videos/uploaders';
+};
+
+export type GetUploadersApiVideosUploadersGetErrors = {
+    /**
+     * Bad Request
+     */
+    400: ApiErrorResponse;
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ApiErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
+};
+
+export type GetUploadersApiVideosUploadersGetError = GetUploadersApiVideosUploadersGetErrors[keyof GetUploadersApiVideosUploadersGetErrors];
+
+export type GetUploadersApiVideosUploadersGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: BaseResponseListStr;
+};
+
+export type GetUploadersApiVideosUploadersGetResponse = GetUploadersApiVideosUploadersGetResponses[keyof GetUploadersApiVideosUploadersGetResponses];
+
 export type GetCategoriesApiCategoriesGetData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/api/categories';
 };
+
+export type GetCategoriesApiCategoriesGetErrors = {
+    /**
+     * Bad Request
+     */
+    400: ApiErrorResponse;
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ApiErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
+};
+
+export type GetCategoriesApiCategoriesGetError = GetCategoriesApiCategoriesGetErrors[keyof GetCategoriesApiCategoriesGetErrors];
 
 export type GetCategoriesApiCategoriesGetResponses = {
     /**
@@ -1372,6 +1852,39 @@ export type GetStatsApiDashboardStatsGetData = {
     query?: never;
     url: '/api/dashboard/stats';
 };
+
+export type GetStatsApiDashboardStatsGetErrors = {
+    /**
+     * Bad Request
+     */
+    400: ApiErrorResponse;
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ApiErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
+};
+
+export type GetStatsApiDashboardStatsGetError = GetStatsApiDashboardStatsGetErrors[keyof GetStatsApiDashboardStatsGetErrors];
 
 export type GetStatsApiDashboardStatsGetResponses = {
     /**
@@ -1396,9 +1909,33 @@ export type GetVideosApiDashboardVideosGetData = {
 
 export type GetVideosApiDashboardVideosGetErrors = {
     /**
+     * Bad Request
+     */
+    400: ApiErrorResponse;
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ApiErrorResponse;
+    /**
      * Validation Error
      */
-    422: HttpValidationError;
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
 };
 
 export type GetVideosApiDashboardVideosGetError = GetVideosApiDashboardVideosGetErrors[keyof GetVideosApiDashboardVideosGetErrors];
@@ -1421,9 +1958,33 @@ export type AiAnalyzeApiComparisonsAiAnalyzePostData = {
 
 export type AiAnalyzeApiComparisonsAiAnalyzePostErrors = {
     /**
+     * Bad Request
+     */
+    400: ApiErrorResponse;
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ApiErrorResponse;
+    /**
      * Validation Error
      */
-    422: HttpValidationError;
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
 };
 
 export type AiAnalyzeApiComparisonsAiAnalyzePostError = AiAnalyzeApiComparisonsAiAnalyzePostErrors[keyof AiAnalyzeApiComparisonsAiAnalyzePostErrors];
@@ -1455,9 +2016,33 @@ export type GetReportApiComparisonsReportGetData = {
 
 export type GetReportApiComparisonsReportGetErrors = {
     /**
+     * Bad Request
+     */
+    400: ApiErrorResponse;
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ApiErrorResponse;
+    /**
      * Validation Error
      */
-    422: HttpValidationError;
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
 };
 
 export type GetReportApiComparisonsReportGetError = GetReportApiComparisonsReportGetErrors[keyof GetReportApiComparisonsReportGetErrors];
@@ -1478,6 +2063,39 @@ export type HealthCheckApiHealthGetData = {
     url: '/api/health';
 };
 
+export type HealthCheckApiHealthGetErrors = {
+    /**
+     * Bad Request
+     */
+    400: ApiErrorResponse;
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ApiErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
+};
+
+export type HealthCheckApiHealthGetError = HealthCheckApiHealthGetErrors[keyof HealthCheckApiHealthGetErrors];
+
 export type HealthCheckApiHealthGetResponses = {
     /**
      * Successful Response
@@ -1491,6 +2109,39 @@ export type RootApiGetData = {
     query?: never;
     url: '/api/';
 };
+
+export type RootApiGetErrors = {
+    /**
+     * Bad Request
+     */
+    400: ApiErrorResponse;
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ApiErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ApiErrorResponse;
+};
+
+export type RootApiGetError = RootApiGetErrors[keyof RootApiGetErrors];
 
 export type RootApiGetResponses = {
     /**

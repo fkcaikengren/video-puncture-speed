@@ -10,7 +10,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from app.core.config import settings
 from app.core.exceptions import NotFoundException
 from app.core.logging import get_logger
-from app.core.schemas import BaseResponse
+from app.core.schemas import ApiErrorResponse
 
 
 logger = get_logger(__name__)
@@ -45,7 +45,7 @@ class JWTMiddleware(BaseHTTPMiddleware):
         if not auth_header or not auth_header.startswith("Bearer "):
             return JSONResponse(
                 status_code=401,
-                content=BaseResponse(
+                content=ApiErrorResponse(
                     code=401,
                     err_msg="Not authenticated",
                     data=None,
@@ -63,7 +63,7 @@ class JWTMiddleware(BaseHTTPMiddleware):
         except ExpiredSignatureError:
             return JSONResponse(
                 status_code=401,
-                content=BaseResponse(
+                content=ApiErrorResponse(
                     code=401,
                     err_msg="Token expired",
                     data=None,
@@ -72,7 +72,7 @@ class JWTMiddleware(BaseHTTPMiddleware):
         except JWTError:
             return JSONResponse(
                 status_code=401,
-                content=BaseResponse(
+                content=ApiErrorResponse(
                     code=401,
                     err_msg="Invalid token",
                     data=None,
@@ -83,7 +83,7 @@ class JWTMiddleware(BaseHTTPMiddleware):
         if user_id is None:
             return JSONResponse(
                 status_code=401,
-                content=BaseResponse(
+                content=ApiErrorResponse(
                     code=401,
                     err_msg="Invalid authentication credentials",
                     data=None,
@@ -95,7 +95,7 @@ class JWTMiddleware(BaseHTTPMiddleware):
         except ValueError:
             return JSONResponse(
                 status_code=401,
-                content=BaseResponse(
+                content=ApiErrorResponse(
                     code=401,
                     err_msg="Invalid authentication credentials",
                     data=None,
@@ -111,7 +111,7 @@ class JWTMiddleware(BaseHTTPMiddleware):
             except NotFoundException:
                 return JSONResponse(
                     status_code=401,
-                    content=BaseResponse(
+                    content=ApiErrorResponse(
                         code=401,
                         err_msg="Invalid authentication credentials",
                         data=None,

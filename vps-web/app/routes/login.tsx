@@ -9,8 +9,7 @@ import loginDec from "@/assets/login_dec.png"
 import { z } from "zod";
 import { zfd } from "zod-form-data";
 import { VideoStatusEnum } from "@/types/video";
-
-
+import { handleApiError } from "@/utils";
 
 const schema = zfd.formData({
   username: zfd.text(z.string().nonempty('用户名不能为空')),
@@ -31,24 +30,20 @@ export default function Login() {
       }
       return "发生了未知错误，请稍后重试";
     }
-
-    try {
-      const { data, error: apiError } = await loginApiAuthLoginPost({
-        body: payload,
-      });
-
-      if (apiError) {
-        console.error(apiError)
-        return "Login failed. Please check your credentials.";
-      } else if (data && data.code >= 300) {
-        return data?.err_msg || "Unknown error occurred"
-      }
-      setAuth(data.data.token, data.data.user);
-      navigate(`/dashboard?status=${VideoStatusEnum.PENDING}`);
-      return null;
-    } catch (err) {
-      return "An unexpected error occurred. Please try again."
+    const { data, error: apiError } = await loginApiAuthLoginPost({
+      body: payload,
+    });
+    const errMsg = handleApiError(apiError)
+    if(errMsg) {
+      return errMsg
+    }
+    if(!data){
+      return "响应为空"
     } 
+    console.log('data', data)
+    setAuth(data.data.token ?? '', data.data.user);
+    navigate(`/dashboard?status=${VideoStatusEnum.PENDING}`);
+    return null;
   }, null);
 
   return (

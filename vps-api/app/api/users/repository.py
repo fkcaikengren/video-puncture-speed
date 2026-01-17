@@ -60,6 +60,10 @@ class UserRepository:
         items = result.scalars().all()
         return items, total
 
+    async def get_all_usernames(self) -> list[str]:
+        result = await self.session.execute(select(User.username).order_by(User.username))
+        return list(result.scalars().all())
+
     async def update_role(self, user_id: uuid.UUID, role: str) -> User:
         user = await self.get_by_id(user_id)
         user.role = role

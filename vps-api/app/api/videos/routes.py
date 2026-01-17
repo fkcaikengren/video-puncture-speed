@@ -1,9 +1,10 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException, status, Depends, Query, Request, Form
+from fastapi import APIRouter, UploadFile, File, HTTPException, Depends, Request, Form
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_session
 from app.core.logging import get_logger
 from app.api.videos.service import VideoService
 from app.api.videos.schemas import VideoListResponse, VideoDetailResponse, UploadResponse, AnalysisResponse, CategoryResponse
+from app.api.users.service import UserService
 from app.core.schemas import BaseResponse
 import uuid
 import os
@@ -25,11 +26,19 @@ async def get_videos(
     keyword: str = None,
     category_id: int = None,
     status: int = None,
+    uploader: str = None,
     session: AsyncSession = Depends(get_session)
 ):
-    user = request.state.user
+  
     service = VideoService(session)
-    data = await service.get_videos(user.id, page, page_size, keyword, category_id, status)
+    data = await service.get_videos(
+        page=page,
+        page_size=page_size,
+        keyword=keyword,
+        category_id=category_id,
+        status=status,
+        uploader=uploader,
+    )
     return BaseResponse(data=data)
 
 @router.get("/candidates", response_model=BaseResponse[VideoListResponse])
@@ -117,6 +126,12 @@ async def analyze_video(
     service = VideoService(session)
     await service.process_video_analysis(id)
     return BaseResponse(data={})
+
+@router.get("/uploaders", response_model=BaseResponse[List[str]])
+async def get_uploaders(session: AsyncSession = Depends(get_session)):
+    data = await UserService(session).get_all_usernames()
+    return BaseResponse(data=data)
+
 
 @categories_router.get("/categories", response_model=BaseResponse[List[CategoryResponse]])
 async def get_categories(session: AsyncSession = Depends(get_session)):

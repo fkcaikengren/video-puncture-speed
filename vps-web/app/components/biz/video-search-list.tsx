@@ -1,12 +1,12 @@
 import { useMemo, type ReactNode } from "react";
-import { useNavigate, useSearchParams } from "react-router";
+import { data, useNavigate, useSearchParams } from "react-router";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { VideoCard } from "@/components/video-card";
 import { VideoStatusEnum, type Video } from "@/types/video";
-import { getVideosApiVideosGet } from "@/APIs";
-import type { BaseResponseVideoListResponse, VideoResponse } from "@/APIs/types.gen";
+import { getVideosApiVideosGet, getUploadersApiVideosUploadersGet } from "@/APIs";
+import type { BaseResponseVideoListResponse, GetVideosApiVideosGetData, VideoResponse } from "@/APIs/types.gen";
 import {
   Pagination,
   PaginationContent,
@@ -19,11 +19,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { formatVideo } from "@/utils";
 import { useModal } from "@/lib/react-modal-store";
+import { toast } from "sonner";
+
+
 
 export interface VideoSearchListParams {
   page: number;
   pageSize: number;
   keyword: string;
+  uploader: string;
   status: string;
   sortBy: string;
 }
@@ -60,6 +64,7 @@ function VideoSearchListSkeleton() {
       <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
         <div className="flex gap-2 w-full md:w-auto">
           <div className="h-10 w-[200px] bg-muted rounded" />
+          <div className="h-10 w-[160px] bg-muted rounded" />
           <div className="h-10 w-[140px] bg-muted rounded" />
           <div className="h-10 w-[140px] bg-muted rounded" />
         </div>
@@ -96,6 +101,22 @@ function VideoSearchListContent({
   const total = response?.data?.total || 0;
   const totalPages = Math.ceil(total / params.pageSize);
 
+  const { data: uploadersData, isLoading: isUploadersLoading } = useQuery({
+    queryKey: ["video-uploaders"],
+    queryFn: async (): Promise<string[]> => {
+      const { data:res, error } = await getUploadersApiVideosUploadersGet();
+      if(error || (res && res.code >= 300)){
+        toast.error(res?.err_msg || '加载上传人列表失败');
+        return []
+      }
+      return res?.data || [];
+    },
+    staleTime: 60_000,
+  });
+
+  const uploaderSelectValue = params.uploader ? params.uploader : "__all__";
+
+
   const handlePageChange = (newPage: number) => {
     if (newPage < 1 || newPage > totalPages) return;
     onParamsChange({ ...params, page: newPage });
@@ -103,6 +124,10 @@ function VideoSearchListContent({
 
   const handleSearch = (value: string) => {
     onParamsChange({ ...params, keyword: value, page: 1 });
+  };
+
+  const handleUploaderChange = (value: string) => {
+    onParamsChange({ ...params, uploader: value === "__all__" ? "" : value, page: 1 });
   };
 
   const handleStatusChange = (value: string) => {
@@ -207,6 +232,19 @@ function VideoSearchListContent({
             value={params.keyword}
             onChange={(e) => handleSearch(e.target.value)}
           />
+          <Select value={uploaderSelectValue} onValueChange={handleUploaderChange} disabled={isUploadersLoading}>
+            <SelectTrigger className="w-[160px]">
+              <SelectValue placeholder="Uploader" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__all__">All Uploaders</SelectItem>
+              {uploadersData?.map((uploader) => (
+                <SelectItem key={uploader} value={uploader}>
+                  {uploader}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Select value={params.status} onValueChange={handleStatusChange}>
             <SelectTrigger className="w-[140px]">
               <SelectValue placeholder="Status" />
@@ -295,6 +333,7 @@ export default function VideoSearchList(props: VideoSearchListProps) {
       page: 1,
       pageSize: 10,
       keyword: "",
+      uploader: "",
       status: "all",
       sortBy: "date",
     };
@@ -305,6 +344,7 @@ export default function VideoSearchList(props: VideoSearchListProps) {
       page: parsePositiveInt(searchParams.get("page"), base.page),
       pageSize: parsePositiveInt(searchParams.get("page_size"), base.pageSize),
       keyword: searchParams.get("keyword") ?? base.keyword,
+      uploader: searchParams.get("uploader") ?? base.uploader,
       status: searchParams.get("status") ?? base.status,
       sortBy: searchParams.get("sort_by") ?? base.sortBy,
     };
@@ -317,22 +357,25 @@ export default function VideoSearchList(props: VideoSearchListProps) {
       nextSearchParams.set("page_size", String(next.pageSize));
       if (next.keyword) nextSearchParams.set("keyword", next.keyword);
       else nextSearchParams.delete("keyword");
+      if (next.uploader) nextSearchParams.set("uploader", next.uploader);
+      else nextSearchParams.delete("uploader");
       nextSearchParams.set("status", next.status);
       nextSearchParams.set("sort_by", next.sortBy);
       return nextSearchParams;
     });
   };
 
-  const query = useMemo(() => {
-    const nextQuery: Record<string, unknown> = {
+  const query = useMemo<NonNullable<GetVideosApiVideosGetData["query"]>>(() => {
+    const nextQuery: NonNullable<GetVideosApiVideosGetData["query"]> = {
       page: params.page,
       page_size: params.pageSize,
     };
     if (params.keyword) nextQuery.keyword = params.keyword;
+    if (params.uploader) nextQuery.uploader = params.uploader;
     const statusQuery = toStatusQuery(params.status);
     if (typeof statusQuery === "number") nextQuery.status = statusQuery;
     return nextQuery;
-  }, [params.keyword, params.page, params.pageSize, params.status]);
+  }, [params.keyword, params.page, params.pageSize, params.status, params.uploader]);
 
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["videos", query],

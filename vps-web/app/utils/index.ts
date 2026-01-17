@@ -1,6 +1,14 @@
 import { VideoStatusEnum, type Video } from "@/types/video"
 import dayjs from "dayjs"
-import type { VideoResponse } from "@/APIs"
+import type { VideoResponse, ApiErrorResponse } from "@/APIs"
+
+export const handleApiError = (apiError: ApiErrorResponse | undefined): string | null  => {
+  if (apiError && apiError.code >= 400) {
+    console.error(apiError.err_msg)
+    return apiError?.err_msg || "Unknown error occurred"
+  }
+  return null
+}
 
 export const getVideoStatusStr = (
   status?: string | number,

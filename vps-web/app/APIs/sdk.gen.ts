@@ -2,7 +2,7 @@
 
 import { type Client, formDataBodySerializer, type Options as Options2, type TDataShape } from './client';
 import { client } from './client.gen';
-import type { AiAnalyzeApiComparisonsAiAnalyzePostData, AiAnalyzeApiComparisonsAiAnalyzePostErrors, AiAnalyzeApiComparisonsAiAnalyzePostResponses, AnalyzeVideoApiVideosAnalysisPostData, AnalyzeVideoApiVideosAnalysisPostErrors, AnalyzeVideoApiVideosAnalysisPostResponses, CreateUserAdminApiAdminUsersCreatePostData, CreateUserAdminApiAdminUsersCreatePostErrors, CreateUserAdminApiAdminUsersCreatePostResponses, DeleteUserAdminApiAdminUsersDeletePostData, DeleteUserAdminApiAdminUsersDeletePostErrors, DeleteUserAdminApiAdminUsersDeletePostResponses, DeleteVideoApiVideosDeletePostData, DeleteVideoApiVideosDeletePostErrors, DeleteVideoApiVideosDeletePostResponses, GetAnalysisApiVideosAnalysisGetData, GetAnalysisApiVideosAnalysisGetErrors, GetAnalysisApiVideosAnalysisGetResponses, GetCandidatesApiVideosCandidatesGetData, GetCandidatesApiVideosCandidatesGetErrors, GetCandidatesApiVideosCandidatesGetResponses, GetCategoriesApiCategoriesGetData, GetCategoriesApiCategoriesGetResponses, GetMeApiAuthMeGetData, GetMeApiAuthMeGetResponses, GetProfileApiUserProfileGetData, GetProfileApiUserProfileGetResponses, GetReportApiComparisonsReportGetData, GetReportApiComparisonsReportGetErrors, GetReportApiComparisonsReportGetResponses, GetStatsApiDashboardStatsGetData, GetStatsApiDashboardStatsGetResponses, GetUsersApiAdminUsersGetData, GetUsersApiAdminUsersGetErrors, GetUsersApiAdminUsersGetResponses, GetVideoDetailApiVideosDetailGetData, GetVideoDetailApiVideosDetailGetErrors, GetVideoDetailApiVideosDetailGetResponses, GetVideosApiDashboardVideosGetData, GetVideosApiDashboardVideosGetErrors, GetVideosApiDashboardVideosGetResponses, GetVideosApiVideosGetData, GetVideosApiVideosGetErrors, GetVideosApiVideosGetResponses, HealthCheckApiHealthGetData, HealthCheckApiHealthGetResponses, LoginApiAuthLoginPostData, LoginApiAuthLoginPostErrors, LoginApiAuthLoginPostResponses, RootApiGetData, RootApiGetResponses, SetRoleApiAdminUsersSetRolePostData, SetRoleApiAdminUsersSetRolePostErrors, SetRoleApiAdminUsersSetRolePostResponses, UpdatePasswordApiUserPasswordPostData, UpdatePasswordApiUserPasswordPostErrors, UpdatePasswordApiUserPasswordPostResponses, UploadVideoApiVideosUploadPostData, UploadVideoApiVideosUploadPostErrors, UploadVideoApiVideosUploadPostResponses } from './types.gen';
+import type { AiAnalyzeApiComparisonsAiAnalyzePostData, AiAnalyzeApiComparisonsAiAnalyzePostErrors, AiAnalyzeApiComparisonsAiAnalyzePostResponses, AnalyzeVideoApiVideosAnalysisPostData, AnalyzeVideoApiVideosAnalysisPostErrors, AnalyzeVideoApiVideosAnalysisPostResponses, CreateUserAdminApiAdminUsersCreatePostData, CreateUserAdminApiAdminUsersCreatePostErrors, CreateUserAdminApiAdminUsersCreatePostResponses, DeleteUserAdminApiAdminUsersDeletePostData, DeleteUserAdminApiAdminUsersDeletePostErrors, DeleteUserAdminApiAdminUsersDeletePostResponses, DeleteVideoApiVideosDeletePostData, DeleteVideoApiVideosDeletePostErrors, DeleteVideoApiVideosDeletePostResponses, GetAnalysisApiVideosAnalysisGetData, GetAnalysisApiVideosAnalysisGetErrors, GetAnalysisApiVideosAnalysisGetResponses, GetCandidatesApiVideosCandidatesGetData, GetCandidatesApiVideosCandidatesGetErrors, GetCandidatesApiVideosCandidatesGetResponses, GetCategoriesApiCategoriesGetData, GetCategoriesApiCategoriesGetErrors, GetCategoriesApiCategoriesGetResponses, GetMeApiAuthMeGetData, GetMeApiAuthMeGetErrors, GetMeApiAuthMeGetResponses, GetProfileApiUserProfileGetData, GetProfileApiUserProfileGetErrors, GetProfileApiUserProfileGetResponses, GetReportApiComparisonsReportGetData, GetReportApiComparisonsReportGetErrors, GetReportApiComparisonsReportGetResponses, GetStatsApiDashboardStatsGetData, GetStatsApiDashboardStatsGetErrors, GetStatsApiDashboardStatsGetResponses, GetUploadersApiVideosUploadersGetData, GetUploadersApiVideosUploadersGetErrors, GetUploadersApiVideosUploadersGetResponses, GetUsersApiAdminUsersGetData, GetUsersApiAdminUsersGetErrors, GetUsersApiAdminUsersGetResponses, GetVideoDetailApiVideosDetailGetData, GetVideoDetailApiVideosDetailGetErrors, GetVideoDetailApiVideosDetailGetResponses, GetVideosApiDashboardVideosGetData, GetVideosApiDashboardVideosGetErrors, GetVideosApiDashboardVideosGetResponses, GetVideosApiVideosGetData, GetVideosApiVideosGetErrors, GetVideosApiVideosGetResponses, HealthCheckApiHealthGetData, HealthCheckApiHealthGetErrors, HealthCheckApiHealthGetResponses, LoginApiAuthLoginPostData, LoginApiAuthLoginPostErrors, LoginApiAuthLoginPostResponses, RootApiGetData, RootApiGetErrors, RootApiGetResponses, SetRoleApiAdminUsersSetRolePostData, SetRoleApiAdminUsersSetRolePostErrors, SetRoleApiAdminUsersSetRolePostResponses, UpdatePasswordApiUserPasswordPostData, UpdatePasswordApiUserPasswordPostErrors, UpdatePasswordApiUserPasswordPostResponses, UploadVideoApiVideosUploadPostData, UploadVideoApiVideosUploadPostErrors, UploadVideoApiVideosUploadPostResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -37,7 +37,7 @@ export const loginApiAuthLoginPost = <ThrowOnError extends boolean = false>(opti
  *
  * Get current authenticated user.
  */
-export const getMeApiAuthMeGet = <ThrowOnError extends boolean = false>(options?: Options<GetMeApiAuthMeGetData, ThrowOnError>) => (options?.client ?? client).get<GetMeApiAuthMeGetResponses, unknown, ThrowOnError>({ url: '/api/auth/me', ...options });
+export const getMeApiAuthMeGet = <ThrowOnError extends boolean = false>(options?: Options<GetMeApiAuthMeGetData, ThrowOnError>) => (options?.client ?? client).get<GetMeApiAuthMeGetResponses, GetMeApiAuthMeGetErrors, ThrowOnError>({ url: '/api/auth/me', ...options });
 
 /**
  * Update Password
@@ -58,7 +58,7 @@ export const updatePasswordApiUserPasswordPost = <ThrowOnError extends boolean =
  *
  * 获取用户信息
  */
-export const getProfileApiUserProfileGet = <ThrowOnError extends boolean = false>(options?: Options<GetProfileApiUserProfileGetData, ThrowOnError>) => (options?.client ?? client).get<GetProfileApiUserProfileGetResponses, unknown, ThrowOnError>({ url: '/api/user/profile', ...options });
+export const getProfileApiUserProfileGet = <ThrowOnError extends boolean = false>(options?: Options<GetProfileApiUserProfileGetData, ThrowOnError>) => (options?.client ?? client).get<GetProfileApiUserProfileGetResponses, GetProfileApiUserProfileGetErrors, ThrowOnError>({ url: '/api/user/profile', ...options });
 
 /**
  * Get Users
@@ -138,14 +138,19 @@ export const getAnalysisApiVideosAnalysisGet = <ThrowOnError extends boolean = f
 export const analyzeVideoApiVideosAnalysisPost = <ThrowOnError extends boolean = false>(options: Options<AnalyzeVideoApiVideosAnalysisPostData, ThrowOnError>) => (options.client ?? client).post<AnalyzeVideoApiVideosAnalysisPostResponses, AnalyzeVideoApiVideosAnalysisPostErrors, ThrowOnError>({ url: '/api/videos/analysis', ...options });
 
 /**
+ * Get Uploaders
+ */
+export const getUploadersApiVideosUploadersGet = <ThrowOnError extends boolean = false>(options?: Options<GetUploadersApiVideosUploadersGetData, ThrowOnError>) => (options?.client ?? client).get<GetUploadersApiVideosUploadersGetResponses, GetUploadersApiVideosUploadersGetErrors, ThrowOnError>({ url: '/api/videos/uploaders', ...options });
+
+/**
  * Get Categories
  */
-export const getCategoriesApiCategoriesGet = <ThrowOnError extends boolean = false>(options?: Options<GetCategoriesApiCategoriesGetData, ThrowOnError>) => (options?.client ?? client).get<GetCategoriesApiCategoriesGetResponses, unknown, ThrowOnError>({ url: '/api/categories', ...options });
+export const getCategoriesApiCategoriesGet = <ThrowOnError extends boolean = false>(options?: Options<GetCategoriesApiCategoriesGetData, ThrowOnError>) => (options?.client ?? client).get<GetCategoriesApiCategoriesGetResponses, GetCategoriesApiCategoriesGetErrors, ThrowOnError>({ url: '/api/categories', ...options });
 
 /**
  * Get Stats
  */
-export const getStatsApiDashboardStatsGet = <ThrowOnError extends boolean = false>(options?: Options<GetStatsApiDashboardStatsGetData, ThrowOnError>) => (options?.client ?? client).get<GetStatsApiDashboardStatsGetResponses, unknown, ThrowOnError>({ url: '/api/dashboard/stats', ...options });
+export const getStatsApiDashboardStatsGet = <ThrowOnError extends boolean = false>(options?: Options<GetStatsApiDashboardStatsGetData, ThrowOnError>) => (options?.client ?? client).get<GetStatsApiDashboardStatsGetResponses, GetStatsApiDashboardStatsGetErrors, ThrowOnError>({ url: '/api/dashboard/stats', ...options });
 
 /**
  * Get Videos
@@ -172,9 +177,9 @@ export const getReportApiComparisonsReportGet = <ThrowOnError extends boolean = 
 /**
  * Health Check
  */
-export const healthCheckApiHealthGet = <ThrowOnError extends boolean = false>(options?: Options<HealthCheckApiHealthGetData, ThrowOnError>) => (options?.client ?? client).get<HealthCheckApiHealthGetResponses, unknown, ThrowOnError>({ url: '/api/health', ...options });
+export const healthCheckApiHealthGet = <ThrowOnError extends boolean = false>(options?: Options<HealthCheckApiHealthGetData, ThrowOnError>) => (options?.client ?? client).get<HealthCheckApiHealthGetResponses, HealthCheckApiHealthGetErrors, ThrowOnError>({ url: '/api/health', ...options });
 
 /**
  * Root
  */
-export const rootApiGet = <ThrowOnError extends boolean = false>(options?: Options<RootApiGetData, ThrowOnError>) => (options?.client ?? client).get<RootApiGetResponses, unknown, ThrowOnError>({ url: '/api/', ...options });
+export const rootApiGet = <ThrowOnError extends boolean = false>(options?: Options<RootApiGetData, ThrowOnError>) => (options?.client ?? client).get<RootApiGetResponses, RootApiGetErrors, ThrowOnError>({ url: '/api/', ...options });

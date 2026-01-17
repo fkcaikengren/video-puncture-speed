@@ -62,6 +62,9 @@ class UserService:
         items = [UserResponse.model_validate(u) for u in users]
         return UserListResponse(items=items, total=total, page=page, page_size=page_size)
 
+    async def get_all_usernames(self) -> list[str]:
+        return await self.repository.get_all_usernames()
+
     async def update_role(self, user_id: uuid.UUID, role: str) -> UserResponse:
         user = await self.repository.update_role(user_id, role)
         return UserResponse.model_validate(user)

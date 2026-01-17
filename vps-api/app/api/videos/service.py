@@ -118,8 +118,25 @@ class VideoService:
             logger.error(f"Unexpected error during video upload: {e}")
             raise InternalServerException(detail="Internal server error during video processing")
 
-    async def get_videos(self, user_id: uuid.UUID, page: int, page_size: int, keyword: str = None, category_id: int = None, status: int = None) -> VideoListResponse:
-        videos, total = await self.repository.get_videos(user_id, page, page_size, keyword, category_id, status)
+    async def get_videos(
+        self,
+        page: int,
+        page_size: int,
+        keyword: str = None,
+        category_id: int = None,
+        status: int = None,
+        uploader: str = None,
+        user_id: uuid.UUID | None = None,
+    ) -> VideoListResponse:
+        videos, total = await self.repository.get_videos(
+            page=page,
+            page_size=page_size,
+            keyword=keyword,
+            category_id=category_id,
+            status=status,
+            uploader=uploader,
+            user_id=user_id,
+        )
         items = [VideoResponse.model_validate(v) for v in videos]
         return VideoListResponse(items=items, total=total, page=page, page_size=page_size)
 

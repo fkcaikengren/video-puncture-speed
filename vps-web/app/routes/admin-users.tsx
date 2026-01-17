@@ -105,12 +105,16 @@ export default function AdminUsers() {
 
   const createUserMutation = useMutation({
     mutationFn: async (input: { username: string; password: string; role: string }) => {
-      const { data, error: apiError } = await createUserAdminApiAdminUsersCreatePost({
+      const { data, error } = await createUserAdminApiAdminUsersCreatePost({
         body: input,
       })
-      if (apiError) throw new Error("创建失败，请检查输入后重试")
-      if (data && data.code >= 300) throw new Error(data.err_msg || "创建失败")
-      return data
+      console.log('data', data)
+      if (data && data.code >= 300) {
+        if(data.code !== 403){
+          throw new Error(data.err_msg || "创建失败")
+        }
+      }
+      return data?.data
     },
     onSuccess: async () => {
       toast("用户已创建")
@@ -119,9 +123,12 @@ export default function AdminUsers() {
       await queryClient.invalidateQueries({ queryKey: ["adminUsers"] })
     },
     onError: (err) => {
-      toast("创建用户失败", {
-        description: err instanceof Error ? err.message : "发生未知错误",
-      })
+      if(err instanceof Error){
+        console.log(err)
+        console.log('err.message', err.message)
+        toast.error(err.message || "发生未知错误")
+      }
+      
     },
   })
 
@@ -131,6 +138,7 @@ export default function AdminUsers() {
         query: { user_id: input.userId },
         body: { role: input.role },
       })
+      
       if (apiError) throw new Error("设置角色失败，请重试")
       if (data && data.code >= 300) throw new Error(data.err_msg || "设置角色失败")
       return input
@@ -180,10 +188,9 @@ export default function AdminUsers() {
 
   const deleteUserMutation = useMutation({
     mutationFn: async (userId: string) => {
-      const { data, error: apiError } = await deleteUserAdminApiAdminUsersDeletePost({
+      const { data } = await deleteUserAdminApiAdminUsersDeletePost({
         query: { user_id: userId },
       })
-      if (apiError) throw new Error("删除失败，请重试")
       if (data && data.code >= 300) throw new Error(data.err_msg || "删除失败")
       return userId
     },
@@ -305,9 +312,9 @@ export default function AdminUsers() {
   })
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 text-foreground">
       <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-        <h1 className="text-2xl font-bold">用户管理</h1>
+        <h1 className="text-2xl font-bold ">用户管理</h1>
 
         <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
           <DialogTrigger asChild>
@@ -317,12 +324,12 @@ export default function AdminUsers() {
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>新建用户</DialogTitle>
+              <DialogTitle className="text-foreground">新建用户</DialogTitle>
               <DialogDescription>创建一个新的用户账号。</DialogDescription>
             </DialogHeader>
 
             <form
-              className="grid gap-4 py-4"
+              className="grid gap-4 py-4 text-foreground"
               onSubmit={(e) => {
                 e.preventDefault()
                 createUserMutation.mutate({

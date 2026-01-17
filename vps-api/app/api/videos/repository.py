@@ -89,16 +89,28 @@ class VideoRepository:
         return result.scalars().all()
 
 
-    async def get_videos(self, user_id: uuid.UUID, page: int, page_size: int, 
-                         keyword: str = None, category_id: int = None, status: int = None, 
-                         require_analysis: bool = False) -> tuple[list[Video], int]:
-        query = select(Video).where(Video.user_id == user_id)
+    async def get_videos(
+        self,
+        page: int,
+        page_size: int,
+        keyword: str = None,
+        category_id: int = None,
+        status: int = None,
+        uploader: str = None,
+        user_id: uuid.UUID | None = None,
+        require_analysis: bool = False,
+    ) -> tuple[list[Video], int]:
+        query = select(Video)
+        if user_id is not None:
+            query = query.where(Video.user_id == user_id)
         
         if require_analysis:
             query = query.join(AnalysisResult, Video.id == AnalysisResult.video_id)
         
         if keyword:
             query = query.where(Video.title.ilike(f"%{keyword}%"))
+        if uploader:
+            query = query.where(Video.uploader == uploader)
         if category_id is not None:
             query = query.where(Video.category_id == category_id)
         if status is not None:
@@ -114,10 +126,22 @@ class VideoRepository:
         
         return items, total
 
-    async def get_candidates(self, user_id: uuid.UUID, page: int, page_size: int, 
-                             keyword: str = None, category_id: int = None) -> tuple[list[Video], int]:
+    async def get_candidates(
+        self,
+        user_id: uuid.UUID,
+        page: int,
+        page_size: int,
+        keyword: str = None,
+        category_id: int = None,
+    ) -> tuple[list[Video], int]:
         return await self.get_videos(
-            user_id, page, page_size, keyword, category_id, status=2, require_analysis=True
+            page=page,
+            page_size=page_size,
+            keyword=keyword,
+            category_id=category_id,
+            status=2,
+            user_id=user_id,
+            require_analysis=True,
         )
 
     async def delete_video_record(self, video: Video):
