@@ -124,7 +124,7 @@ def analyse_video(
 
     # 寻找floor_idx
     start_len = float(lens[0]) if lens else 0.0
-    threshold_len = start_len / 3.0   # 长度剩余1/3时 作为结束点
+    threshold_len = start_len / 2.0   # 长度剩余1/2时 作为结束点
     predict_end = predict_start + 1
     if start_len > 0:
         for i in range( 1,  + len(lens)):
@@ -133,17 +133,17 @@ def analyse_video(
                 floor_idx = i
                 predict_end = predict_start + i
                 break
-
-    # 计算速度
-    speed_swin=32 if meta["fps"] >= 60 else 16
-    speed_step=8 if meta["fps"] >= 60 else 4
+    # TODO: 计算速度的窗口改为 前端可配置
+    # 计算速度 
+    speed_swin=60 if meta["fps"] >= 60 else 30
+    speed_step=30 if meta["fps"] >= 60 else 15
     init_speed, avg_speed, instantaneous_speeds = calc_speed(
         lens,
         (0, int(floor_idx)),
         fps=meta["fps"],
         swin=speed_swin, 
         step=speed_step,
-        init_speed_sample_points = 6
+        init_speed_sample_points = 5
     )
 
     instantaneous_speed_indexes = [
@@ -172,13 +172,6 @@ def analyse_video(
                 alpha=0.35,
             )
 
-    # save_speeds_graph(
-    #     instantaneous_speeds,
-    #     speed_frame_indexes,
-    #     graph_output_path=str(output_dir / f"{video_path.stem}_speeds.png"),
-    #     title=str( f"{video_path.stem}_speeds.png"),
-    # )
-    # print(f"speeds graph saved to {output_dir / f'{video_path.stem}_speeds.png'}")
 
     # 保存视频到临时目录
     save_frames2video(

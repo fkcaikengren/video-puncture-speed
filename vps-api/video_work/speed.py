@@ -174,10 +174,11 @@ def calc_speed(
     
     start_idx, end_idx = start_end
     
-    
-    needle_lengths = _gaussian_smoothing(lengths) #对长度平滑
-    start_length = needle_lengths[start_idx]
-    end_length = needle_lengths[end_idx]
+    needle_lengths = lengths[start_idx:end_idx+1]
+    needle_lengths = _gaussian_smoothing(needle_lengths) #对长度平滑
+    start_length = needle_lengths[0]
+    end_length = needle_lengths[-1]
+
     if start_length<=0:
         start_length = 0.000001 #避免除以0
     
