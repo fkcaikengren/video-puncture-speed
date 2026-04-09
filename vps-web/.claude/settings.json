@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//Users/tangshiwen/Documents/vscode/python/video-puncture-speed/**)"
+    ]
+  }
+}

@@ -68,7 +68,7 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader>
         <div className="flex items-center justify-between px-4 py-2 group-data-[collapsible=icon]:px-0">
-          <div className="text-xl font-bold group-data-[collapsible=icon]:hidden">v-puncture</div>
+          <div className="text-xl font-bold group-data-[collapsible=icon]:hidden">静脉穿刺测速系统</div>
           <SidebarTrigger />
         </div>
       </SidebarHeader>

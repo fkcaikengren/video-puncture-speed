@@ -264,19 +264,29 @@ export default function AdminUsers() {
           const isDeleting = deleteUserMutation.isPending && deleteUserMutation.variables === user.id
 
           return (
-            <Button
-              className="cursor-pointer"
-              type="button"
-              variant="destructive"
-              size="sm"
-              disabled={isDeleting}
-              onClick={() => {
-                setDeleteTarget(user)
-                setDeleteDialogOpen(true)
-              }}
-            >
-              {isDeleting ? "删除中..." : "删除"}
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                className="cursor-pointer"
+                type="button"
+                variant="outline"
+                size="sm"
+              >
+                修改
+              </Button>
+              <Button
+                className="cursor-pointer"
+                type="button"
+                variant="destructive"
+                size="sm"
+                disabled={isDeleting}
+                onClick={() => {
+                  setDeleteTarget(user)
+                  setDeleteDialogOpen(true)
+                }}
+              >
+                {isDeleting ? "删除中..." : "删除"}
+              </Button>
+            </div>
           )
         },
       },

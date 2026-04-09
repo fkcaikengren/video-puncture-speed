@@ -43,8 +43,10 @@ function ProfileSkeleton() {
     <div className="container mx-auto p-6 max-w-2xl">
       <Card>
         <CardHeader>
-          <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-4 w-32 mt-2" />
+          <div className="flex flex-col items-center gap-4">
+            <Skeleton className="w-20 h-20 rounded-full" />
+            <Skeleton className="h-8 w-48" />
+          </div>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-2">
@@ -55,7 +57,18 @@ function ProfileSkeleton() {
             <Skeleton className="h-4 w-24" />
             <Skeleton className="h-10 w-full" />
           </div>
-          <Skeleton className="h-10 w-32" />
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+          <div className="flex items-center justify-between pt-4">
+            <Skeleton className="h-10 w-32" />
+            <Skeleton className="h-10 w-32" />
+          </div>
         </CardContent>
       </Card>
     </div>
@@ -178,24 +191,38 @@ function ProfileContent({ profile }: { profile: UserResponse }) {
     <div className="container mx-auto p-6 max-w-2xl">
       <Card>
         <CardHeader>
-          <CardTitle>我的信息</CardTitle>
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-20 h-20 rounded-full bg-purple-500 flex items-center justify-center text-white text-3xl font-bold">
+              {profile.username.charAt(0).toUpperCase()}
+            </div>
+            <CardTitle>我的信息</CardTitle>
+          </div>
         </CardHeader>
+        
         <CardContent className="space-y-6">
           <div className="space-y-2">
-            <Label>用户名</Label>
-            <div className="p-3 bg-muted rounded-md text-sm font-medium">
-              {profile.username}
-            </div>
-          </div>
-          
-          <div className="space-y-2">
-            <Label>角色</Label>
-            <div className="p-3 bg-muted rounded-md text-sm font-medium capitalize">
-              {profile.role || "User"}
-            </div>
+            <Label htmlFor="username">用户名</Label>
+            <Input id="username" name="username" value={profile.username} disabled />
           </div>
 
-          <div className="pt-4">
+          <div className="space-y-2">
+            <Label htmlFor="role">角色</Label>
+            <Input id="role" name="role" value={profile.role || "User"} disabled className="capitalize" />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="phone">电话</Label>
+            <Input id="phone" name="phone" type="tel" value="18079081024" disabled />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="email">邮箱</Label>
+            <Input id="email" name="email" type="email" value="liuguang@163.com" disabled />
+          </div>
+
+          
+
+          <div className="flex items-center justify-between pt-4">
+            <Button type="button">修改信息</Button>
             <ChangePasswordDialog />
           </div>
         </CardContent>

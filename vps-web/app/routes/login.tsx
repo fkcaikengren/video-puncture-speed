@@ -52,9 +52,9 @@ export default function Login() {
         <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
           <div className="mx-auto grid w-[350px] gap-6">
             <div className="grid gap-2 text-center">
-              <h1 className="text-5xl font-bold tracking-tighter text-primary mb-2">VPS</h1>
+              <h1 className="text-5xl font-bold tracking-tighter text-primary mb-2">VenipunctureSpeed</h1>
               <p className="text-xl text-muted-foreground mb-4">
-                穿刺测速系统 
+                静脉穿刺测速系统
               </p>
             </div>
             <form action={handleLogin} className="grid gap-4">

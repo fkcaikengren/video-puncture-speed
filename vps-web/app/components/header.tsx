@@ -12,6 +12,19 @@ import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { ModeToggle } from "@/components/mode-toggle"
 
+const pathLabels: Record<string, string> = {
+  dashboard: "我的视频",
+  profile: "个人资料",
+  login: "登录",
+  admin: "管理",
+  users: "用户管理",
+  video: "视频",
+  list: "视频列表",
+  analysis: "视频分析",
+  compare: "视频对比",
+  upload: "视频上传",
+};
+
 export function Header() {
   const location = useLocation();
   const pathnames = location.pathname.split("/").filter((x) => x);
@@ -27,7 +40,7 @@ export function Header() {
             {pathnames.map((value, index) => {
               const to = `/${pathnames.slice(0, index + 1).join("/")}`;
               const isLast = index === pathnames.length - 1;
-              const formattedValue = value.replace(/-/g, " ").replace(/^\w/, (c) => c.toUpperCase());
+              const formattedValue = pathLabels[value] || value.replace(/-/g, " ").replace(/^\w/, (c) => c.toUpperCase());
 
               return (
                 <React.Fragment key={to}>

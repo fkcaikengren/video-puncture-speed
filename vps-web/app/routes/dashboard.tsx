@@ -279,8 +279,8 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <Button className="ml-2" onClick={getH5Link}>
+        <div className="">
+          <Button className="ml-2 hidden" onClick={getH5Link}>
             获取h5上传地址
             <Copy className="mr-1"  />
           </Button>

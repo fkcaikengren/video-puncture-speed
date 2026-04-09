@@ -227,17 +227,17 @@ function VideoSearchListContent({
       <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
         <div className="flex gap-2 w-full md:w-auto">
           <Input
-            placeholder="Search videos..."
+            placeholder="搜索视频..."
             className="max-w-[200px]"
             value={params.keyword}
             onChange={(e) => handleSearch(e.target.value)}
           />
           <Select value={uploaderSelectValue} onValueChange={handleUploaderChange} disabled={isUploadersLoading}>
             <SelectTrigger className="w-[160px]">
-              <SelectValue placeholder="Uploader" />
+              <SelectValue placeholder="上传人" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="__all__">All Uploaders</SelectItem>
+              <SelectItem value="__all__">全部上传人</SelectItem>
               {uploadersData?.map((uploader) => (
                 <SelectItem key={uploader} value={uploader}>
                   {uploader}
@@ -247,23 +247,23 @@ function VideoSearchListContent({
           </Select>
           <Select value={params.status} onValueChange={handleStatusChange}>
             <SelectTrigger className="w-[140px]">
-              <SelectValue placeholder="Status" />
+              <SelectValue placeholder="状态" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
-              <SelectItem value="processing">Processing</SelectItem>
-              <SelectItem value="failed">Failed</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="all">全部</SelectItem>
+              <SelectItem value="completed">已完成</SelectItem>
+              <SelectItem value="processing">处理中</SelectItem>
+              <SelectItem value="failed">失败</SelectItem>
+              <SelectItem value="pending">待处理</SelectItem>
             </SelectContent>
           </Select>
           <Select value={params.sortBy} onValueChange={handleSortChange}>
             <SelectTrigger className="w-[140px]">
-              <SelectValue placeholder="Sort By" />
+              <SelectValue placeholder="排序" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="date">Date</SelectItem>
-              <SelectItem value="name">Name</SelectItem>
+              <SelectItem value="date">日期</SelectItem>
+              <SelectItem value="name">名称</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -287,7 +287,7 @@ function VideoSearchListContent({
                 disabled={!canSelect(video)}
                 onClick={() => onSelectVideoId?.(video.id)}
               >
-                {canSelect(video) ? "选择" : "仅 Completed 可选"}
+                {canSelect(video) ? "选择" : "仅已完成可选"}
               </Button>
             ) : null}
           </div>
